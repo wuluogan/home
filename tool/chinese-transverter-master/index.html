@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="UTF-8">
+		<title>中文简体繁体转换器</title>
+		<meta name="keywords" content="繁体中文,繁体表达,简体繁体转换工具,正体字,简繁互转"/>
+		<meta name="description" content="实用的简体繁体文字转换工具"/>
+		<link rel="shortcut icon" href="/public/img/favicon.png">
+		<style type="text/css">
+			html{color:#000;background:#FFF}body,div,dl,dt,dd,ul,ol,li,h1,h3,h3,h4,h5,h6,pre,code,form,fieldset,legend,input,textarea,p,blockquote,th,td{margin:0;padding:0}table{border-collapse:collapse;border-spacing:0}fieldset,img{border:0}address,caption,cite,code,dfn,em,strong,th,var{font-style:normal;font-weight:normal}ol,ul{list-style:none}caption,th{text-align:left}h1,h3,h3,h4,h5,h6{font-size:100%;font-weight:normal}q:before,q:after{content:''}abbr,acronym{border:0;font-variant:normal}sup{vertical-align:text-top}sub{vertical-align:text-bottom}input,textarea,select{font-family:inherit;font-size:inherit;font-weight:inherit;*font-size:100%}legend{color:#000}
+			body{
+				background: #f2f8fe;
+				font-size:14px;
+				font-family: "Microsoft Yahei",Arial,Helvetica;
+			}
+			button,input{
+				font-family: "Microsoft Yahei",Arial,Helvetica;
+			}
+			.container{
+				width:640px;
+				margin:0 auto;
+				padding-bottom: 25px;
+			}
+			.mod-panel .hd{
+				padding-top: 25px;
+				margin-bottom: 25px;
+				line-height: 30px;
+				text-align: center;
+			}
+			.mod-panel .hd h1{
+				font-size: 24px;
+				font-weight: bold;
+				color:#212121;
+			}
+			.mod-panel .bd{
+				margin-bottom:20px;
+			}
+			.mod-panel .bd p{
+				line-height: 30px;
+			}
+			.mod-panel label{
+				margin-right: 20px;
+			}
+			.mod-panel button{
+				margin-right: 10px;
+			}
+			.mod-panel textarea{
+				display: block;
+				width:100%;
+				height:210px;
+				padding:5px 8px;
+				box-sizing: border-box;
+				border: 1px solid #e8e8e8;
+				border-radius: 6px;
+				resize:none;
+			}
+			.mod-panel .setting{
+				margin: 10px 0;
+			}
+			.mod-panel .buttons{
+				margin-bottom: 10px;
+				text-align: center;
+			}
+			.mod-panel .pull-right{
+				float: right;
+			}
+			.mod-panel .intro{
+				padding: 10px 15px;
+				margin: 10px 0 20px;
+				text-align: left;
+				background: rgba(0,0,0,0.04);
+				border-radius: 8px;
+			}
+			.mod-foot .bd{
+				width:640px;
+				margin:0 auto;
+				text-align:center;
+				color:#666;
+			}
+			.mod-foot .bd a{
+				color:#666;
+				text-decoration:none;
+			}
+			.mod-foot .bd a:hover{
+				text-decoration:underline;
+			}
+		</style>
+		<script type="text/javascript" src="transverter.js"></script>
+	</head>
+	<body>
+		<div class="container">
+			<div class="mod-panel">
+				<div class="hd"><h1>中文简体繁体转换器</h1></div>
+				<div class="bd">
+					<p>输入内容：</p>
+					<p>
+						<textarea id="content"></textarea>
+					</p>
+					<div class="setting">
+						<span>地区用法：</span>
+						<label for="field1"><input id="field1" type="radio" name="language" value="" checked> 无</label>
+						<label for="field2"><input id="field2" type="radio" name="language" value="zh_TW"> 台湾</label>
+						<span class="pull-right"><button id="simplified">转成简体中文</button><button id="traditional">转成繁体中文</button></span>
+					</div>
+
+					<p>转换结果：</p>
+					<p>
+						<textarea id="reslut"></textarea>
+					</p>
+				</div>
+				<div class="ft">
+					<div class="intro">
+						<p>简易的繁体中文和简体中文的转换工具，结合不同地区的日常生活中语言惯用法不同。</p>
+					</div>
+					<div class="buttons">
+						<a class="github-button" href="https://github.com/mumuy" data-color-scheme="no-preference: light; light: light; dark: dark;" data-size="large" aria-label="Follow @mumuy on GitHub">Follow @mumuy</a>
+						<a class="github-button" href="https://github.com/mumuy/chinese-transverter/fork" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-repo-forked" data-size="large" data-show-count="true" aria-label="Fork mumuy/chinese-transverter on GitHub">Fork</a>
+						<a class="github-button" href="https://github.com/mumuy/chinese-transverter" data-color-scheme="no-preference: light; light: light; dark: dark;" data-icon="octicon-star" data-size="large" data-show-count="true" aria-label="Star mumuy/chinese-transverter on GitHub">Star</a>
+					</div>
+				</div>
+			</div>
+			<script type="text/javascript" src="https://passer-by.com/public/script/projects.js"></script>
+			<div class="mod-foot">
+				<div class="bd">
+					<p>&copy; <a href="http://www.passer-by.com" target="_blank">passer-by.com</a></p>
+				</div>
+			</div>
+		</div>
+		<script type="text/javascript">
+			var $language = document.getElementsByName('language');
+			var $content = document.getElementById('content');
+			var $reslut = document.getElementById('reslut');
+			document.getElementById('simplified').onclick = function(){
+				var language = $language[1].checked?'zh_TW':'';
+				$reslut.value = transverter({
+					type:'simplified',
+					str:$content.value,
+					language:language
+				});
+			}
+			document.getElementById('traditional').onclick = function(){
+				var language = $language[1].checked?'zh_TW':'';
+				$reslut.value = transverter({
+					type:'traditional',
+					str:$content.value,
+					language:language
+				});
+			}
+		</script>
+		<script async defer src="https://cdn.bootcdn.net/ajax/libs/github-buttons/2.21.1/buttons.min.js"></script>
+		<script type="text/javascript" src="https://passer-by.com/public/script/stat.js"></script>
+	</body>
+</html>
