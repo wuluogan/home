@@ -1,0 +1,1 @@
+import"./request-8dfe3b2d.js";import{a6 as o}from"./index-6d20be63.js";const a=a=>o({url:"/openapi/ip",method:"post",data:a}),t=a=>o({url:"/openapi/webinfo",method:"post",data:a});export{t as a,a as g};
