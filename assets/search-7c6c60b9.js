@@ -1,0 +1,1 @@
+import{aB as a}from"./index-fdf094b9.js";const e=()=>a({method:"GET",hiddenBar:!0,url:"/search/hot/detail"}),s=e=>a({method:"GET",hiddenBar:!0,url:"/search/suggest",params:{keywords:e}}),r=(e,s=30,r=0,d=1)=>a({method:"GET",url:"/cloudsearch",params:{keywords:e,limit:s,offset:r,type:d}});export{s as a,r as b,e as g};
