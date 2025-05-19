@@ -1,0 +1,1 @@
+html,body{margin:0;padding:0;height:100%;overflow:hidden}@media (max-width: 767px){.mobile-center-title{position:absolute;left:50%;transform:translate(-50%)}}.fade-expand-enter-active,.fade-expand-leave-active{transition:all .3s ease}.fade-expand-enter-from,.fade-expand-leave-to{opacity:0;transform:scaleY(.8)}.tool-component{min-height:calc(100vh - 112px)}

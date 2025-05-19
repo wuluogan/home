@@ -1,0 +1,1 @@
+import{aM as o}from"./index-d93ecfd9.js";const e=o=>({dotSize:"8px",dotColor:"rgba(255, 255, 255, .3)",dotColorActive:"rgba(255, 255, 255, 1)",dotColorFocus:"rgba(255, 255, 255, .5)",dotLineWidth:"16px",dotLineWidthActive:"24px",arrowColor:"#eee"}),r={name:"Carousel",common:o,self:e};export{r as c,e as s};
