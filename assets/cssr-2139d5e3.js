@@ -1,1 +1,0 @@
-import{f as o,i as n,bP as t,bQ as e}from"./index-d93ecfd9.js";let i,s;var a,d;function l(t){if(s)return;let e=!1;o((()=>{s||null==i||i.then((()=>{e||t()}))})),n((()=>{e=!0}))}i=t?null===(d=null===(a=document)||void 0===a?void 0:a.fonts)||void 0===d?void 0:d.ready:void 0,s=!1,void 0!==i?i.then((()=>{s=!0})):s=!0;const{c:u}=e(),v="vueuc-style";export{v as a,u as c,l as o};

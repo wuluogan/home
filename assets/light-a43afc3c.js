@@ -1,0 +1,1 @@
+import{aO as o,aM as a,aR as s}from"./index-c72c5b0c.js";import{p as r}from"./light-cb0cf260.js";const e={padding:"8px 14px"},t=o({name:"Tooltip",common:a,peers:{Popover:r},self:o=>{const{borderRadius:a,boxShadow2:r,baseColor:t}=o;return Object.assign(Object.assign({},e),{borderRadius:a,boxShadow:r,color:s(t,"rgba(0, 0, 0, .85)"),textColor:t})}});export{e as c,t};

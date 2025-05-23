@@ -1,0 +1,1 @@
+import{c2 as e,a as i}from"./index-c72c5b0c.js";const o=e("right",!0,(function(e){return i("svg",{width:e.size,height:e.size,viewBox:"0 0 48 48",fill:"none"},[i("path",{d:"M19 12L31 24L19 36",stroke:e.colors[0],"stroke-width":e.strokeWidth,"stroke-linecap":e.strokeLinecap,"stroke-linejoin":e.strokeLinejoin},null)])}));export{o as R};

@@ -1,0 +1,1 @@
+import{aO as o,aM as s,aP as n}from"./index-c72c5b0c.js";import{p as a}from"./light-cb0cf260.js";const e={iconSize:"22px"},i=o=>{const{fontSize:s,warningColor:n}=o;return Object.assign(Object.assign({},e),{fontSize:s,iconColor:n})},r=o({name:"Popconfirm",common:s,peers:{Button:n,Popover:a},self:i});export{r as p,i as s};

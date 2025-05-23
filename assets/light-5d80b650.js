@@ -1,0 +1,1 @@
+import{aM as o}from"./index-c72c5b0c.js";const t=o=>{const{textColor1:t,dividerColor:r,fontWeightStrong:e}=o;return{textColor:t,color:r,fontWeight:e}},r={name:"Divider",common:o,self:t};export{r as d,t as s};

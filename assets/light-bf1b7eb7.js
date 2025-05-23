@@ -1,0 +1,1 @@
+import{aM as e}from"./index-c72c5b0c.js";const i=e=>{const{opacityDisabled:i,heightTiny:o,heightSmall:t,heightMedium:a,heightLarge:n,heightHuge:s,primaryColor:r,fontSize:g}=e;return{fontSize:g,textColor:r,sizeTiny:o,sizeSmall:t,sizeMedium:a,sizeLarge:n,sizeHuge:s,color:r,opacitySpinning:i}},o={name:"Spin",common:e,self:i};export{o as a,i as s};
