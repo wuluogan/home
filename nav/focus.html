@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>专注时钟 & 白噪音</title>
+    <style>
+        :root {
+            --primary-color: #4a6fa5;
+            --secondary-color: #6b8cae;
+            --accent-color: #ff7e5f;
+            --light-color: #f8f9fa;
+            --dark-color: #343a40;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            color: var(--dark-color);
+        }
+        
+        h1 {
+            color: var(--primary-color);
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            width: 100%;
+            max-width: 1000px;
+        }
+        
+        .panel {
+            flex: 1;
+            min-width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .panel:hover {
+            transform: translateY(-5px);
+        }
+        
+        .panel h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+        
+        .timer-display {
+            font-size: 5rem;
+            text-align: center;
+            font-family: 'UnidreamLED', monospace;
+            color: var(--primary-color);
+            margin: 20px 0;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .timer-controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+        
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        button:hover {
+            background-color: var(--secondary-color);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 8px rgba(0,0,0,0.15);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled {
+            background-color: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .timer-settings {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        input[type="number"] {
+            width: 60px;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: center;
+        }
+        
+        .sound-option {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(74, 111, 165, 0.05);
+            border-radius: 8px;
+            transition: background 0.3s ease;
+        }
+        
+        .sound-option:hover {
+            background: rgba(74, 111, 165, 0.1);
+        }
+        
+        .sound-option label {
+            margin-left: 10px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            flex-grow: 1;
+        }
+        
+        .volume-control {
+            margin-top: 25px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .volume-control label {
+            margin-right: 10px;
+            font-size: 1.1rem;
+        }
+        
+        input[type="range"] {
+            flex-grow: 1;
+            height: 5px;
+            -webkit-appearance: none;
+            background: #ddd;
+            border-radius: 5px;
+            outline: none;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+            
+            .panel {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>专注工作空间</h1>
+    
+    <div class="container">
+        <!-- 专注时钟区域 -->
+        <div class="panel" id="timer-panel">
+            <h2>专注时钟</h2>
+            <div class="timer-display">25:00</div>
+            <div class="timer-controls">
+                <button id="start-btn">开始</button>
+                <button id="pause-btn" disabled>暂停</button>
+                <button id="reset-btn">重置</button>
+            </div>
+            <div class="timer-settings">
+                <input type="number" id="minutes-input" min="1" max="120" value="25">
+                <span>分钟</span>
+                <button id="set-btn">设置</button>
+            </div>
+        </div>
+        
+        <!-- 白噪音区域 -->
+        <div class="panel" id="sound-panel">
+            <h2>白噪音</h2>
+            <div class="sound-options">
+                <div class="sound-option">
+                    <input type="checkbox" id="rain-sound">
+                    <label for="rain-sound">🌧️ 雨声</label>
+                    <audio id="rain-audio" src="public/mp3/focus/rain.mp3" loop></audio>
+                </div>
+                <div class="sound-option">
+                    <input type="checkbox" id="waves-sound">
+                    <label for="waves-sound">🌊 海浪</label>
+                    <audio id="waves-audio" src="public/mp3/focus/waves-light.mp3" loop></audio>
+                </div>
+                <div class="sound-option">
+                    <input type="checkbox" id="forest-sound">
+                    <label for="forest-sound">🌲 森林</label>
+                    <audio id="forest-audio" src="public/mp3/focus/forest-night.mp3" loop></audio>
+                </div>
+                <div class="sound-option">
+                    <input type="checkbox" id="coffee-sound">
+                    <label for="coffee-sound">☕ 咖啡馆</label>
+                    <audio id="coffee-audio" src="public/mp3/focus/cafe.mp3" loop></audio>
+                </div>
+            </div>
+            <div class="volume-control">
+                <label for="volume">音量:</label>
+                <input type="range" id="volume" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // 计时器功能
+        const timerDisplay = document.querySelector('.timer-display');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const minutesInput = document.getElementById('minutes-input');
+        const setBtn = document.getElementById('set-btn');
+        
+        let timer;
+        let totalSeconds = 25 * 60;
+        let isRunning = false;
+        
+        function updateDisplay() {
+            const minutes = Math.floor(totalSeconds / 60);
+            const seconds = totalSeconds % 60;
+            timerDisplay.textContent = `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        function startTimer() {
+            if (isRunning) return;
+            
+            isRunning = true;
+            startBtn.disabled = true;
+            pauseBtn.disabled = false;
+            
+            timer = setInterval(() => {
+                if (totalSeconds <= 0) {
+                    clearInterval(timer);
+                    isRunning = false;
+                    new Audio('public/mp3/focus/alert.mp3').play();
+                    alert('时间到！');
+                    return;
+                }
+                
+                totalSeconds--;
+                updateDisplay();
+            }, 1000);
+        }
+        
+        function pauseTimer() {
+            clearInterval(timer);
+            isRunning = false;
+            startBtn.disabled = false;
+            pauseBtn.disabled = true;
+        }
+        
+        function resetTimer() {
+            pauseTimer();
+            totalSeconds = parseInt(minutesInput.value) * 60;
+            updateDisplay();
+        }
+        
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+        setBtn.addEventListener('click', resetTimer);
+        
+        // 白噪音功能
+        const volumeControl = document.getElementById('volume');
+        const soundOptions = document.querySelectorAll('.sound-option input[type="checkbox"]');
+        const audioElements = document.querySelectorAll('.sound-option audio');
+        
+        function updateVolume() {
+            const volume = volumeControl.value;
+            audioElements.forEach(audio => {
+                audio.volume = volume;
+            });
+        }
+        
+        soundOptions.forEach((checkbox, index) => {
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    audioElements[index].play();
+                } else {
+                    audioElements[index].pause();
+                }
+            });
+        });
+        
+        volumeControl.addEventListener('input', updateVolume);
+        
+        // 初始化
+        updateDisplay();
+        updateVolume();
+    </script>
+</body>
+</html>

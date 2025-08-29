@@ -1,0 +1,918 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图标制作工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+         
+        body {
+            /* background: linear-gradient(135deg, #c2c9e1, #b21f1f, #1a2a6c); */
+            /* color: #fff; */
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+         
+         
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 25px;
+            max-width: 1000px;
+            width: 100%;
+            margin-bottom: 30px;
+        }
+         
+        .panel {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+         
+        .controls {
+            flex: 1;
+            min-width: 300px;
+        }
+         
+        .preview {
+            flex: 1;
+            min-width: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+         
+        .panel-title {
+            font-size: 1.4rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+        }
+         
+        .panel-title i {
+            margin-right: 10px;
+            color: #4CAF50;
+        }
+         
+        .form-group {
+            margin-bottom: 20px;
+        }
+         
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+         
+        input, select, textarea {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(0, 0, 0, 0.25);
+            color: white;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s;
+        }
+         
+        input:focus, select:focus, textarea:focus {
+            background: rgba(0, 0, 0, 0.35);
+            box-shadow: 0 0 0 2px #7facef;
+        }
+         
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+         
+        button {
+            background: linear-gradient(to right, #39aef3, #4270ee);
+            color: white;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+         
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+         
+        .download-btn {
+            background: linear-gradient(to right, #2196F3, #21CBF3);
+        }
+         
+        .icon-canvas {
+            width: 220px;
+            height: 220px;
+            border-radius: 20px;
+            margin-bottom: 25px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s;
+            position: relative;
+        }
+         
+        .icon-canvas:hover {
+            transform: scale(1.03);
+        }
+         
+        .text-preview {
+            text-align: center;
+            word-break: break-word;
+            max-width: 100%;
+            padding: 15px;
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: white;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+         
+        .tabs {
+            display: flex;
+            margin-bottom: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            overflow: hidden;
+        }
+         
+        .tab-btn {
+            flex: 1;
+            padding: 14px;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.7);
+            border: none;
+            cursor: pointer;
+            font-size: 1.1rem;
+            transition: all 0.3s;
+            font-weight: 600;
+        }
+         
+        .tab-btn.active {
+            background: linear-gradient(to right, #689ceb, #1b90ea);
+            color: white;
+        }
+         
+        .tab-content {
+            display: none;
+        }
+         
+        .tab-content.active {
+            display: block;
+        }
+         
+        #imagePreview {
+            max-width: 100%;
+            max-height: 150px;
+            margin-top: 15px;
+            border-radius: 8px;
+            display: none;
+        }
+         
+        .color-picker-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 8px;
+        }
+         
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+        }
+         
+        .text-style-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+         
+        .text-style-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 8px;
+            cursor: pointer;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+         
+        .text-style-btn.active {
+            background: linear-gradient(to right, #4CAF50, #2E8B57);
+        }
+         
+        .slider-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+         
+        .slider-container span {
+            min-width: 50px;
+            text-align: center;
+        }
+         
+        input[type="range"] {
+            flex: 1;
+            height: 8px;
+            -webkit-appearance: none;
+            background: rgba(0, 0, 0, 0.25);
+            border-radius: 4px;
+            outline: none;
+        }
+         
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #74c2e6;
+            cursor: pointer;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+         
+        .download-options {
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+         
+        .download-options label {
+            margin-bottom: 0;
+        }
+         
+        .download-options select {
+            flex: 1;
+            min-width: 120px;
+        }
+         
+        .format-options {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+         
+        .format-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+         
+        .compatibility-note {
+            background: rgba(255, 0, 0, 0.2);
+            padding: 10px;
+            border-radius: 8px;
+            margin-top: 15px;
+            border: 1px solid rgba(255, 0, 0, 0.3);
+        }
+         
+        .compatibility-note i {
+            margin-right: 5px;
+        }
+         
+        .success-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            padding: 15px 30px;
+            border-radius: 8px;
+            background: #599ae4;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+         
+        .success-message.error {
+            background: #f44336;
+        }
+    </style>
+    <!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;700&family=Noto+Serif+SC:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=ZCOOL+KuaiLe&family=ZCOOL+QingKe+HuangYou&family=ZCOOL+XiaoWei&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&display=swap" rel="stylesheet"> -->
+</head>
+<body>
+    <div class="container">
+        <div class="panel controls">
+            <div class="tabs">
+                <button class="tab-btn active" id="textTabBtn">文字图标</button>
+                <button class="tab-btn" id="imageTabBtn">图片图标</button>
+            </div>
+             
+            <div id="textTab" class="tab-content active">
+                <div class="form-group">
+                    <label for="iconText"><i class="fas fa-text-height"></i> 文字内容（用回车换行）</label>
+                    <textarea id="iconText">图标</textarea>
+                </div>
+                 
+                <div class="text-style-controls">
+                    <button id="boldBtn" class="text-style-btn">
+                        <i class="fas fa-bold"></i> 加粗
+                    </button>
+                    <button id="italicBtn" class="text-style-btn">
+                        <i class="fas fa-italic"></i> 斜体
+                    </button>
+                </div>
+                 
+                <div class="text-style-controls">
+                    <button id="alignLeftBtn" class="text-style-btn">
+                        <i class="fas fa-align-left"></i> 左对齐
+                    </button>
+                    <button id="alignCenterBtn" class="text-style-btn active">
+                        <i class="fas fa-align-center"></i> 居中
+                    </button>
+                    <button id="alignRightBtn" class="text-style-btn">
+                        <i class="fas fa-align-right"></i> 右对齐
+                    </button>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-paint-brush"></i> 文字颜色</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="textColor" value="#4CAF50">
+                        <div class="color-preview" id="textColorPreview" style="background-color: #4CAF50;"></div>
+                    </div>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-fill"></i> 背景颜色</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="bgColor" value="#2196F3">
+                        <div class="color-preview" id="bgColorPreview" style="background-color: #2196F3;"></div>
+                    </div>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-text-height"></i> 字体大小</label>
+                    <div class="slider-container">
+                        <input type="range" id="fontSize" min="10" max="200" value="60">
+                        <span id="fontSizeValue">60px</span>
+                    </div>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-font"></i> 字体</label>
+                    <select id="fontFamily">
+                        <option value="Arial">Arial</option>
+                        <option value="Verdana">Verdana</option>
+                        <option value="Microsoft YaHei">微软雅黑</option>
+                        <option value="SimSun">宋体</option>
+                        <option value="KaiTi">楷体</option>
+                        <option value="'Noto Sans SC', sans-serif">Noto Sans SC (思源黑体)</option>
+                        <option value="'Noto Serif SC', serif">Noto Serif SC (思源宋体)</option>
+                        <option value="'ZCOOL XiaoWei', serif">站酷小薇体</option>
+                        <option value="'ZCOOL QingKe HuangYou', cursive">站酷庆科黄油体</option>
+                        <option value="'ZCOOL KuaiLe', cursive">站酷快乐体</option>
+                        <option value="'Ma Shan Zheng', cursive">马善政体</option>
+                    </select>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-shapes"></i> 图标形状</label>
+                    <select id="iconShape">
+                        <option value="rounded">方形圆角</option>
+                        <option value="circle">圆形</option>
+                        <option value="square">方形</option>
+                    </select>
+                </div>
+                 
+                <button id="generateTextBtn"><i class="fas fa-magic"></i> 生成图标</button>
+            </div>
+             
+            <div id="imageTab" class="tab-content">
+                <div class="form-group">
+                    <label for="imageUpload"><i class="fas fa-upload"></i> 上传图片</label>
+                    <input type="file" id="imageUpload" accept="image/*">
+                    <img id="imagePreview">
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-fill"></i> 背景颜色</label>
+                    <div class="color-picker-container">
+                        <input type="color" id="imageBgColor" value="#2196F3">
+                        <div class="color-preview" id="imageBgColorPreview" style="background-color: #2196F3;"></div>
+                    </div>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-shapes"></i> 图标形状</label>
+                    <select id="imageShape">
+                        <option value="rounded">方形圆角</option>
+                        <option value="circle">圆形</option>
+                        <option value="square">方形</option>
+                    </select>
+                </div>
+                 
+                <div class="form-group">
+                    <label><i class="fas fa-expand"></i> 图片大小</label>
+                    <div class="slider-container">
+                        <input type="range" id="imageSize" min="10" max="100" value="80">
+                        <span id="imageSizeValue">80%</span>
+                    </div>
+                </div>
+                 
+                <button id="generateImageBtn"><i class="fas fa-magic"></i> 生成图标</button>
+            </div>
+             
+            <div class="compatibility-note">
+                <i class="fas fa-exclamation-triangle"></i>
+                已修复Chrome/Edge浏览器兼容性问题，所有功能均可正常使用
+            </div>
+        </div>
+         
+        <div class="panel preview">
+            <h2 class="panel-title"><i class="fas fa-eye"></i> 图标预览</h2>
+             
+            <div class="icon-canvas" id="iconCanvas">
+                <div id="textPreview" class="text-preview">图标</div>
+            </div>
+             
+            <div class="download-options">
+                <div>
+                    <label for="downloadSize"><i class="fas fa-download"></i> 下载尺寸:</label>
+                    <select id="downloadSize">
+                        <option value="32">32×32</option>
+                        <option value="48">48×48</option>
+                        <option value="64">64×64</option>
+                        <option value="128">128×128</option>
+                        <option value="256" selected>256×256</option>
+                        <option value="512">512×512</option>
+                        <option value="1024">1024×1024</option>
+                    </select>
+                </div>
+                 
+                <div class="format-options">
+                    <div class="format-option">
+                        <input type="radio" id="formatPng" name="format" value="png" checked>
+                        <label for="formatPng">PNG</label>
+                    </div>
+                    <div class="format-option">
+                        <input type="radio" id="formatIco" name="format" value="ico">
+                        <label for="formatIco">ICO</label>
+                    </div>
+                </div>
+            </div>
+             
+            <button class="download-btn" id="downloadBtn"><i class="fas fa-download"></i> 下载图标</button>
+        </div>
+    </div>
+     
+    <div class="success-message" id="successMessage">
+        <i class="fas fa-check-circle"></i>
+        <span id="messageText">操作成功！</span>
+    </div>
+ 
+    <script>
+        // 文字样式状态
+        const textStyles = {
+            bold: false,
+            italic: false,
+            align: 'center'
+        };
+         
+        // DOM元素
+        const elements = {
+            textTabBtn: document.getElementById('textTabBtn'),
+            imageTabBtn: document.getElementById('imageTabBtn'),
+            textTab: document.getElementById('textTab'),
+            imageTab: document.getElementById('imageTab'),
+            boldBtn: document.getElementById('boldBtn'),
+            italicBtn: document.getElementById('italicBtn'),
+            alignLeftBtn: document.getElementById('alignLeftBtn'),
+            alignCenterBtn: document.getElementById('alignCenterBtn'),
+            alignRightBtn: document.getElementById('alignRightBtn'),
+            iconText: document.getElementById('iconText'),
+            textColor: document.getElementById('textColor'),
+            bgColor: document.getElementById('bgColor'),
+            fontSize: document.getElementById('fontSize'),
+            fontSizeValue: document.getElementById('fontSizeValue'),
+            fontFamily: document.getElementById('fontFamily'),
+            iconShape: document.getElementById('iconShape'),
+            imageUpload: document.getElementById('imageUpload'),
+            imagePreview: document.getElementById('imagePreview'),
+            imageBgColor: document.getElementById('imageBgColor'),
+            imageShape: document.getElementById('imageShape'),
+            imageSize: document.getElementById('imageSize'),
+            imageSizeValue: document.getElementById('imageSizeValue'),
+            generateTextBtn: document.getElementById('generateTextBtn'),
+            generateImageBtn: document.getElementById('generateImageBtn'),
+            iconCanvas: document.getElementById('iconCanvas'),
+            textPreview: document.getElementById('textPreview'),
+            downloadSize: document.getElementById('downloadSize'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            textColorPreview: document.getElementById('textColorPreview'),
+            bgColorPreview: document.getElementById('bgColorPreview'),
+            imageBgColorPreview: document.getElementById('imageBgColorPreview'),
+            formatPng: document.getElementById('formatPng'),
+            formatIco: document.getElementById('formatIco'),
+            successMessage: document.getElementById('successMessage'),
+            messageText: document.getElementById('messageText')
+        };
+         
+        // 切换标签页
+        function openTab(tabName) {
+            // 隐藏所有标签内容
+            elements.textTab.classList.remove('active');
+            elements.imageTab.classList.remove('active');
+            elements.textTabBtn.classList.remove('active');
+            elements.imageTabBtn.classList.remove('active');
+             
+            // 显示选中的标签
+            if (tabName === 'text') {
+                elements.textTab.classList.add('active');
+                elements.textTabBtn.classList.add('active');
+            } else {
+                elements.imageTab.classList.add('active');
+                elements.imageTabBtn.classList.add('active');
+            }
+        }
+         
+        // 更新字体大小显示
+        function updateFontSize() {
+            elements.fontSizeValue.textContent = elements.fontSize.value + 'px';
+            updateTextPreview();
+        }
+         
+        // 更新图片大小显示
+        function updateImageSize() {
+            elements.imageSizeValue.textContent = elements.imageSize.value + '%';
+        }
+         
+        // 图片上传预览
+        function handleImageUpload(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    elements.imagePreview.src = event.target.result;
+                    elements.imagePreview.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+         
+        // 实时更新颜色预览
+        function updateColorPreviews() {
+            elements.textColorPreview.style.backgroundColor = elements.textColor.value;
+            elements.bgColorPreview.style.backgroundColor = elements.bgColor.value;
+            elements.imageBgColorPreview.style.backgroundColor = elements.imageBgColor.value;
+            updateTextPreview();
+        }
+         
+        // 实时更新文字预览
+        function updateTextPreview() {
+            // 处理换行
+            const formattedText = elements.iconText.value.replace(/\n/g, '<br>');
+             
+            // 更新预览
+            elements.textPreview.innerHTML = formattedText;
+            elements.textPreview.style.color = elements.textColor.value;
+            elements.textPreview.style.textAlign = textStyles.align;
+            elements.iconCanvas.style.backgroundColor = elements.bgColor.value;
+            elements.textPreview.style.fontSize = elements.fontSize.value + 'px';
+            elements.textPreview.style.fontFamily = elements.fontFamily.value;
+             
+            // 应用文字样式
+            elements.textPreview.style.fontWeight = textStyles.bold ? 'bold' : 'normal';
+            elements.textPreview.style.fontStyle = textStyles.italic ? 'italic' : 'normal';
+        }
+         
+        // 切换文字样式
+        function toggleTextStyle(style) {
+            textStyles[style] = !textStyles[style];
+            elements[style + 'Btn'].classList.toggle('active');
+            updateTextPreview();
+        }
+         
+        // 设置文字对齐方式
+        function setTextAlign(align) {
+            textStyles.align = align;
+             
+            // 更新按钮状态
+            elements.alignLeftBtn.classList.remove('active');
+            elements.alignCenterBtn.classList.remove('active');
+            elements.alignRightBtn.classList.remove('active');
+            elements['align' + align.charAt(0).toUpperCase() + align.slice(1) + 'Btn'].classList.add('active');
+             
+            updateTextPreview();
+        }
+         
+        // 生成文字图标
+        function generateTextIcon() {
+            const iconCanvas = elements.iconCanvas;
+            const textPreview = elements.textPreview;
+             
+            // 获取用户输入
+            const text = elements.iconText.value;
+            const textColor = elements.textColor.value;
+            const bgColor = elements.bgColor.value;
+            const fontSize = elements.fontSize.value + 'px';
+            const fontFamily = elements.fontFamily.value;
+            const shape = elements.iconShape.value;
+             
+            // 处理换行
+            const formattedText = text.replace(/\n/g, '<br>');
+             
+            // 应用样式
+            iconCanvas.style.backgroundColor = bgColor;
+            textPreview.innerHTML = formattedText;
+            textPreview.style.color = textColor;
+            textPreview.style.fontSize = fontSize;
+            textPreview.style.fontFamily = fontFamily;
+            textPreview.style.textAlign = textStyles.align;
+            textPreview.style.fontWeight = textStyles.bold ? 'bold' : 'normal';
+            textPreview.style.fontStyle = textStyles.italic ? 'italic' : 'normal';
+             
+            // 应用形状
+            iconCanvas.style.borderRadius = '0';
+            if (shape === 'circle') {
+                iconCanvas.style.borderRadius = '50%';
+            } else if (shape === 'rounded') {
+                iconCanvas.style.borderRadius = '20px';
+            }
+             
+            // 显示成功消息
+            showMessage('文字图标已生成！');
+        }
+         
+        // 生成图片图标
+        function generateImageIcon() {
+            const iconCanvas = elements.iconCanvas;
+            const imgPreview = elements.imagePreview;
+             
+            if (!imgPreview.src) {
+                showMessage('请先上传图片', 'error');
+                return;
+            }
+             
+            // 获取用户输入
+            const bgColor = elements.imageBgColor.value;
+            const shape = elements.imageShape.value;
+            const imageSize = elements.imageSize.value + '%';
+             
+            // 清空画布
+            iconCanvas.innerHTML = '';
+             
+            // 创建图片元素
+            const img = document.createElement('img');
+            img.src = imgPreview.src;
+            img.style.maxWidth = imageSize;
+            img.style.maxHeight = imageSize;
+             
+            // 应用样式
+            iconCanvas.style.backgroundColor = bgColor;
+            iconCanvas.appendChild(img);
+             
+            // 应用形状
+            iconCanvas.style.borderRadius = '0';
+            if (shape === 'circle') {
+                iconCanvas.style.borderRadius = '50%';
+            } else if (shape === 'rounded') {
+                iconCanvas.style.borderRadius = '20px';
+            }
+             
+            // 显示成功消息
+            showMessage('图片图标已生成！');
+        }
+         
+        // 下载图标
+        function downloadIcon() {
+            const iconCanvas = elements.iconCanvas;
+            const downloadSize = parseInt(elements.downloadSize.value);
+            const format = elements.formatPng.checked ? 'png' : 'ico';
+             
+            // 创建一个临时canvas
+            const canvas = document.createElement('canvas');
+            canvas.width = downloadSize;
+            canvas.height = downloadSize;
+            const ctx = canvas.getContext('2d');
+             
+            // 绘制背景
+            ctx.fillStyle = window.getComputedStyle(iconCanvas).backgroundColor;
+             
+            // 根据形状绘制
+            const shapeStyle = window.getComputedStyle(iconCanvas).borderRadius;
+            if (shapeStyle === '50%') {
+                ctx.beginPath();
+                ctx.arc(downloadSize/2, downloadSize/2, downloadSize/2, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (shapeStyle === '20px') {
+                const borderRadius = 20 * (downloadSize / 220);
+                ctx.beginPath();
+                ctx.roundRect(0, 0, downloadSize, downloadSize, borderRadius);
+                ctx.fill();
+            } else {
+                ctx.fillRect(0, 0, downloadSize, downloadSize);
+            }
+             
+            // 如果是文字图标
+            if (iconCanvas.querySelector('.text-preview')) {
+                const textElement = iconCanvas.querySelector('.text-preview');
+                const scale = downloadSize / 220;
+                 
+                // 计算缩放后的字体大小
+                const originalFontSize = parseFloat(window.getComputedStyle(textElement).fontSize);
+                const scaledFontSize = originalFontSize * scale;
+                 
+                // 设置字体样式
+                let fontStyle = '';
+                if (textElement.style.fontStyle === 'italic') {
+                    fontStyle += 'italic ';
+                }
+                if (textElement.style.fontWeight === 'bold') {
+                    fontStyle += 'bold ';
+                }
+                 
+                ctx.font = `${fontStyle}${scaledFontSize}px ${textElement.style.fontFamily}`;
+                ctx.fillStyle = textElement.style.color;
+                ctx.textAlign = textElement.style.textAlign;
+                ctx.textBaseline = 'middle';
+                 
+                // 获取文本内容并分割成多行
+                const textContent = elements.iconText.value;
+                const lines = textContent.split('\n');
+                 
+                // 计算行高和起始Y位置
+                const lineHeight = scaledFontSize * 1.2;
+                const totalTextHeight = (lines.length - 1) * lineHeight;
+                const startY = (downloadSize - totalTextHeight) / 2;
+                 
+                // 绘制每一行文本
+                lines.forEach((line, index) => {
+                    let xPos;
+                    if (textElement.style.textAlign === 'center') {
+                        xPos = downloadSize / 2;
+                    } else if (textElement.style.textAlign === 'right') {
+                        xPos = downloadSize - 10;
+                    } else {
+                        xPos = 10;
+                    }
+                     
+                    ctx.fillText(line, xPos, startY + index * lineHeight);
+                });
+                 
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `icon_${downloadSize}x${downloadSize}.${format}`;
+                link.href = canvas.toDataURL(`image/${format === 'ico' ? 'x-icon' : 'png'}`);
+                link.click();
+                 
+                showMessage(`图标已下载 (${downloadSize}×${downloadSize}.${format})`);
+            }
+            // 如果是图片图标
+            else if (iconCanvas.querySelector('img')) {
+                const imgElement = iconCanvas.querySelector('img');
+                const img = new Image();
+                img.crossOrigin = "anonymous";
+                img.src = imgElement.src;
+                 
+                // 等待图片加载
+                img.onload = function() {
+                    // 计算图片位置居中
+                    const imgSizePercent = parseInt(imgElement.style.maxWidth) / 100;
+                    const imgWidth = downloadSize * imgSizePercent;
+                    const imgHeight = downloadSize * imgSizePercent;
+                    const x = (downloadSize - imgWidth) / 2;
+                    const y = (downloadSize - imgHeight) / 2;
+                     
+                    // 创建剪切路径
+                    if (shapeStyle === '50%') {
+                        ctx.beginPath();
+                        ctx.arc(downloadSize/2, downloadSize/2, downloadSize/2, 0, Math.PI * 2);
+                        ctx.clip();
+                    } else if (shapeStyle === '20px') {
+                        const borderRadius = 20 * (downloadSize / 220);
+                        ctx.beginPath();
+                        ctx.roundRect(0, 0, downloadSize, downloadSize, borderRadius);
+                        ctx.clip();
+                    }
+                     
+                    // 绘制图片
+                    ctx.drawImage(img, x, y, imgWidth, imgHeight);
+                     
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.download = `icon_${downloadSize}x${downloadSize}.${format}`;
+                    link.href = canvas.toDataURL(`image/${format === 'ico' ? 'x-icon' : 'png'}`);
+                    link.click();
+                     
+                    showMessage(`图标已下载 (${downloadSize}×${downloadSize}.${format})`);
+                };
+                 
+                img.onerror = function() {
+                    showMessage('图片加载失败，请重试', 'error');
+                };
+            } else {
+                showMessage('请先生成图标', 'error');
+            }
+        }
+         
+        // 显示消息
+        function showMessage(message, type = 'success') {
+            elements.messageText.textContent = message;
+            elements.successMessage.className = 'success-message';
+            if (type === 'error') {
+                elements.successMessage.classList.add('error');
+            }
+             
+            // 淡入
+            setTimeout(() => {
+                elements.successMessage.style.opacity = '1';
+            }, 10);
+             
+            // 3秒后淡出
+            setTimeout(() => {
+                elements.successMessage.style.opacity = '0';
+            }, 3000);
+        }
+         
+        // 初始化事件监听器
+        function initEventListeners() {
+            // 标签页切换
+            elements.textTabBtn.addEventListener('click', () => openTab('text'));
+            elements.imageTabBtn.addEventListener('click', () => openTab('image'));
+             
+            // 文字样式
+            elements.boldBtn.addEventListener('click', () => toggleTextStyle('bold'));
+            elements.italicBtn.addEventListener('click', () => toggleTextStyle('italic'));
+            elements.alignLeftBtn.addEventListener('click', () => setTextAlign('left'));
+            elements.alignCenterBtn.addEventListener('click', () => setTextAlign('center'));
+            elements.alignRightBtn.addEventListener('click', () => setTextAlign('right'));
+             
+            // 输入变化
+            elements.fontSize.addEventListener('input', updateFontSize);
+            elements.imageSize.addEventListener('input', updateImageSize);
+            elements.imageUpload.addEventListener('change', handleImageUpload);
+            elements.textColor.addEventListener('input', updateColorPreviews);
+            elements.bgColor.addEventListener('input', updateColorPreviews);
+            elements.imageBgColor.addEventListener('input', updateColorPreviews);
+            elements.iconText.addEventListener('input', updateTextPreview);
+            elements.fontFamily.addEventListener('change', updateTextPreview);
+             
+            // 生成按钮
+            elements.generateTextBtn.addEventListener('click', generateTextIcon);
+            elements.generateImageBtn.addEventListener('click', generateImageIcon);
+             
+            // 下载按钮
+            elements.downloadBtn.addEventListener('click', downloadIcon);
+        }
+         
+        // 初始化页面
+        function init() {
+            initEventListeners();
+            generateTextIcon();
+            updateFontSize();
+            updateImageSize();
+            updateColorPreviews();
+        }
+         
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', init);
+    </script>
+</body>
+</html>

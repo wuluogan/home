@@ -1,0 +1,1127 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <link rel="shortcut icon" type="image/svg+xml" href="favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>WSite</title>
+  <meta name="keywords" content="站点监控,状态监控,服务器监控">
+  <meta name="description" content="实时监控网站运行状态">
+  <link rel="stylesheet" href="https://s1.hdslb.com/bfs/static/jinkela/long/font/regular.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1.11.10/dayjs.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.5/dist/axios.min.js"></script>
+  <style>
+    :root {
+      --main-background: #ffffff;
+      --main-hover-color: #efefef;
+      --primary-color: #3bd672;
+      --secondary-color: #747474;
+      --normal-color: #63ffbd;
+      --normal-background-color: #3bd672;
+      --error-color: #ff9595;
+      --error-background-color: #de484a;
+      --unknown-color: #4f4f4f;
+      --unknown-background-color: #2f2f2f;
+      --allErrors-color: #ff8c8c;
+      --loading-color: #58d0ff;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      user-select: none;
+      text-decoration: none;
+    }
+
+    body {
+      background-color: #f6f8fa;
+      /* background-image: url("/images/background.png"); */
+      background-attachment: fixed;
+      overflow-y: overlay;
+      overflow-x: hidden;
+      font-family: "HarmonyOS_Regular", sans-serif;
+    }
+
+    .container {
+      box-sizing: border-box;
+      max-width: 980px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    #header {
+      color: #fff;
+      position: relative;
+      /* height: 360px; */
+      padding: 30px 0 48px 0;
+      box-sizing: border-box;
+      background: linear-gradient(to right, #00bbff 0%, #0088ff 100%);
+      z-index: 0;
+    }
+
+    #header .cover {
+      width: 100%;
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      z-index: -1;
+    }
+
+    #header .cover.loading {
+      background: linear-gradient(to right, #00bbff 0%, #0088ff 100%);
+    }
+
+    #header .cover.error {
+      background: linear-gradient(to right, #e47e7e 0%, #ee5555 100%);
+    }
+
+    #header .cover.allError,
+    #header .cover.wrong {
+      background: linear-gradient(to right, #ee5555 0%, #ff2b2b 100%);
+    }
+
+    #header .cover.normal {
+      background: linear-gradient(to right, #4fd69c 0%, #24a66e 100%);
+    }
+
+    #header .menu {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 20px 20px 0;
+    }
+
+    #header .logo {
+      font-size: 20px;
+      font-weight: bold;
+    }
+
+    #header .status {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+      margin: auto 20px 2px 20px;
+    }
+
+    #header .icon {
+      position: relative;
+      width: 40px;
+      height: 40px;
+      min-width: 40px;
+      background-color: var(--main-background);
+      border-radius: 50%;
+      margin-right: 26px;
+    }
+
+    #header .icon::after {
+      content: "";
+      background-color: var(--loading-color);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      opacity: 1;
+      animation: breathing 2s ease infinite;
+      transition: background-color 1s;
+    }
+
+    #header .icon.error::after {
+      background-color: var(--error-color);
+    }
+
+    #header .icon.allError::after,
+    #header .icon.wrong::after {
+      background-color: var(--allErrors-color);
+    }
+
+    #header .icon.normal::after {
+      background-color: var(--normal-color);
+    }
+
+    #header .r-text {
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+    }
+
+    #header .text {
+      color: #fff;
+      font-size: 40px;
+      font-weight: bold;
+    }
+
+    #header .tip {
+      color: #fff;
+      font-size: 14px;
+      margin-top: 4px;
+      opacity: 0.8;
+    }
+
+    #header .time {
+      display: flex;
+      align-items: center;
+    }
+
+    #header .last-update::after {
+      content: "|";
+      margin: 0 8px;
+    }
+
+    #header .refresh {
+      cursor: pointer;
+      margin-left: 6px;
+    }
+
+    #header .overview {
+      color: #fff;
+      margin-left: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+    }
+
+    #header .count {
+      opacity: 0.8;
+      margin-bottom: 4px;
+    }
+
+    #header .count .name {
+      margin-right: 4px;
+    }
+
+    #header .count .num {
+      font-size: 18px;
+    }
+
+    #header .status-num {
+      display: flex;
+      font-size: 20px;
+    }
+
+    #header .ok-count {
+      display: flex;
+      align-items: center;
+    }
+
+    #header .ok-count::after {
+      content: "/";
+      font-size: 16px;
+      margin: 0 6px;
+    }
+
+    #header .unknownCount-count {
+      display: flex;
+      align-items: center;
+    }
+
+    #header .unknownCount-count::before {
+      content: "/";
+      font-size: 16px;
+      margin: 0 6px;
+    }
+
+    #header .name {
+      margin-right: 4px;
+    }
+
+    #main {
+      margin-top: -40px;
+    }
+
+    #main .all-site {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 200px;
+      border-radius: 16px;
+      background-color: var(--main-background);
+      box-shadow: 0 10px 30px #0000001a;
+      overflow: hidden;
+      padding: 20px;
+    }
+
+    .loading {
+      width: 36px;
+      height: 36px;
+      border: 4px solid #ededed;
+      border-top-color: #858585;
+      border-radius: 50%;
+      animation: spin 0.8s infinite linear;
+    }
+
+    .sites {
+      width: 100%;
+    }
+
+    .site {
+      cursor: pointer;
+      padding: 30px;
+      border-bottom: 1px solid #e6e7e8;
+      transition: background-color 0.3s;
+    }
+
+    .site:last-child {
+      border-bottom: none;
+    }
+
+    .site:hover {
+      background-color: var(--main-hover-color);
+    }
+
+    .site.error {
+      background-color: #ff00000f;
+    }
+
+    .site.error:hover {
+      background-color: var(--main-hover-color);
+    }
+
+    .meta {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+    }
+
+    .link {
+      cursor: pointer;
+      color: #a0a0a0;
+      margin-left: 8px;
+      transition: color 0.3s;
+    }
+
+    .link:hover {
+      color: var(--primary-color);
+    }
+
+    .status {
+      display: flex;
+      align-items: center;
+      flex-direction: row;
+      margin-left: auto;
+      font-size: 14px;
+      color: var(--normal-background-color);
+    }
+
+    .status.error {
+      color: var(--error-background-color);
+    }
+
+    .status.error .icon {
+      background-color: var(--error-background-color);
+    }
+
+    .status.error .icon::after {
+      background-color: var(--error-background-color);
+    }
+
+    .status.unknown {
+      color: var(--unknown-background-color);
+    }
+
+    .status.unknown .icon {
+      background-color: var(--unknown-background-color);
+    }
+
+    .status.unknown .icon::after {
+      background-color: var(--unknown-background-color);
+    }
+
+    .status .icon {
+      position: relative;
+      width: 12px;
+      height: 12px;
+      background-color: var(--normal-background-color);
+      border-radius: 25px;
+      margin-right: 8px;
+    }
+
+    .status .icon::after {
+      content: "";
+      background-color: var(--normal-background-color);
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      border-radius: 50%;
+      opacity: 1;
+      animation: breathing 1.5s ease infinite;
+      transition: background-color 1s;
+    }
+
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      flex-direction: row;
+      margin: 15px 0 10px;
+    }
+
+    .timeline .line {
+      cursor: pointer;
+      border-radius: 6px;
+      flex-grow: 1;
+      height: 26px;
+      margin: 0 1px;
+      background-color: var(--normal-background-color);
+      transition: transform 0.3s;
+    }
+
+    .timeline .line:first-child {
+      margin-left: 0;
+    }
+
+    .timeline .line:last-child {
+      margin-right: 0;
+    }
+
+    .timeline .line.error {
+      background-color: var(--error-background-color);
+    }
+
+    .timeline .line.none {
+      background-color: #e5e8eb;
+    }
+
+    .timeline .line:hover {
+      transform: scale(1.05);
+    }
+
+    .summary {
+      display: flex;
+      flex-direction: row;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--secondary-color);
+      font-size: 13px;
+    }
+
+    #footer {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      margin: 8px 0 40px 0;
+    }
+    .i-icon {
+      font-size: 18px;
+    }
+
+    .text {
+      text-align: center;
+      font-size: 13px;
+      line-height: 26px;
+      color: var(--secondary-color);
+    }
+
+    .text .link {
+      color: var(--secondary-color);
+      font-weight: bold;
+      transition: color 0.3s;
+      cursor: pointer;
+    }
+
+    .text .link:hover {
+      color: var(--primary-color);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      width: 68vw;
+      max-width: 960px;
+      min-width: min(30rem, 100vw);
+      border-radius: 8px;
+      padding: 20px;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .modal-close {
+      cursor: pointer;
+      font-size: 20px;
+    }
+
+    .chart-container {
+      width: 100%;
+      height: 400px;
+      margin-bottom: 20px;
+    }
+
+    @keyframes breathing {
+      0% {
+        transform: scale(1);
+        opacity: 0.8;
+      }
+      100% {
+        transform: scale(2);
+        opacity: 0;
+      }
+    }
+
+    @keyframes spin {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .now, .day {
+        display: none;
+      }
+    }
+
+    @media (max-width: 670px) {
+      #header .overview {
+        display: none;
+      }
+    }
+
+    @media (max-width: 520px) {
+      #header .icon {
+        width: 30px;
+        height: 30px;
+        min-width: 30px;
+      }
+      #header .text {
+        font-size: 34px;
+      }
+      #header .tip {
+        font-size: 13px;
+      }
+    }
+
+    @media (max-width: 420px) {
+      #header .status {
+        height: 100%;
+        justify-content: center;
+        margin: 0 0 2px 0;
+      }
+      #header .icon {
+        display: none;
+      }
+      #header .text {
+        font-size: 30px;
+      }
+      #header .tip {
+        font-size: 12px;
+      }
+      .timeline .line {
+        margin: 0;
+        border-radius: 0;
+      }
+      .timeline .line:first-child {
+        border-radius: 6px 0 0 6px;
+      }
+      .timeline .line:last-child {
+        border-radius: 0 6px 6px 0;
+      }
+      .timeline .line:hover {
+        transform: none;
+      }
+      .status .icon {
+        margin-right: 0;
+      }
+      .status .tip {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div id="root">
+    <header id="header">
+      <div class="cover loading"></div>
+      <div class="container">
+        <div class="menu">
+          <span class="logo" id="siteName">WSite</span>
+        </div>
+        <div class="status">
+          <div class="icon loading"></div>
+          <div class="r-text">
+            <div class="text" id="statusText">站点状态加载中</div>
+            <div class="tip">
+              <div class="time">
+                <span class="last-update" id="lastUpdate">上次更新于 --:--:--</span>
+                <div class="update">
+                  <span>更新频率 5 分钟</span>
+                  <span class="refresh" id="refreshBtn">↻</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="overview" id="overview">
+            <div class="count">
+              <span class="name">站点总数</span>
+              <span class="num" id="totalCount">0</span>
+            </div>
+            <div class="status-num">
+              <div class="ok-count">
+                <span class="name">正常</span>
+                <span class="num" id="okCount">0</span>
+              </div>
+              <div class="down-count">
+                <span class="name">异常</span>
+                <span class="num" id="downCount">0</span>
+              </div>
+              <div class="unknownCount-count" id="unknownCountContainer" style="display: none;">
+                <span class="name">未知</span>
+                <span class="num" id="unknownCount">0</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </header>
+    <main id="main">
+      <div class="container">
+        <div class="all-site" id="siteContainer">
+          <div class="loading"></div>
+        </div>
+      </div>
+    </main>
+    <footer id="footer">
+      <div class="text">
+    
+        <p>
+          基于&nbsp;
+          <a class="link" href="https://uptimerobot.com/" target="_blank">UptimeRobot</a>
+          &nbsp;接口&nbsp;|&nbsp;检测频率 5 分钟
+        </p>
+        <p>
+          &nbsp;&copy;&nbsp;2024
+        </p>
+      </div>
+    </footer>
+  </div>
+
+  <!-- 详情弹窗 -->
+  <div class="modal" id="detailModal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2 id="modalTitle">站点详情</h2>
+        <span class="modal-close" id="modalClose">&times;</span>
+      </div>
+      <div id="modalBody">
+        <div class="alert" id="statusAlert" style="padding: 10px; margin-bottom: 20px; border-radius: 4px;"></div>
+        <div class="chart-container">
+          <canvas id="siteChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // 配置参数
+    const config = {
+      apiKey: 'ur2637941-88d76ff62168aa6f01bf27e0',
+      countDays: 60,
+      globalApi: 'https://api.wlgs.site/home/uptimerobot',
+      siteName: 'WSite',
+      showLinks: 'true'
+    };
+
+    // 状态管理
+    const state = {
+      siteState: 'loading',
+      siteOverview: null,
+      siteData: null,
+      lastClickTime: 0,
+      chartInstance: null
+    };
+
+    // DOM 元素
+    const elements = {
+      siteName: document.getElementById('siteName'),
+      statusText: document.getElementById('statusText'),
+      lastUpdate: document.getElementById('lastUpdate'),
+      refreshBtn: document.getElementById('refreshBtn'),
+      siteContainer: document.getElementById('siteContainer'),
+      totalCount: document.getElementById('totalCount'),
+      okCount: document.getElementById('okCount'),
+      downCount: document.getElementById('downCount'),
+      unknownCount: document.getElementById('unknownCount'),
+      unknownCountContainer: document.getElementById('unknownCountContainer'),
+      headerCover: document.querySelector('#header .cover'),
+      headerIcon: document.querySelector('#header .icon'),
+      detailModal: document.getElementById('detailModal'),
+      modalTitle: document.getElementById('modalTitle'),
+      modalClose: document.getElementById('modalClose'),
+      modalBody: document.getElementById('modalBody'),
+      statusAlert: document.getElementById('statusAlert')
+    };
+
+    // 初始化
+    function init() {
+      elements.siteName.textContent = config.siteName;
+      elements.refreshBtn.addEventListener('click', refreshStatus);
+      elements.modalClose.addEventListener('click', () => {
+        elements.detailModal.style.display = 'none';
+      });
+      
+      // 点击模态框外部关闭
+      elements.detailModal.addEventListener('click', (e) => {
+        if (e.target === elements.detailModal) {
+          elements.detailModal.style.display = 'none';
+        }
+      });
+
+      getSiteStatusData();
+    }
+
+    // 格式化数字，保留两位小数
+    function formatNumber(value) {
+      return (Math.floor(value * 100) / 100).toString();
+    }
+
+    // 格式化持续时间，将秒转换为小时、分钟和秒
+    function formatDuration(seconds) {
+      const h = Math.floor(seconds / 3600);
+      const m = Math.floor((seconds % 3600) / 60);
+      const s = seconds % 60;
+
+      const parts = [];
+      if (h > 0) parts.push(`${h} 小时`);
+      if (m > 0) parts.push(`${m} 分`);
+      if (s > 0) parts.push(`${s} 秒`);
+
+      return parts.join(' ');
+    }
+
+    // 格式化时间戳
+    function formatTimestamp(timestamp) {
+      const date = new Date(timestamp);
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${hours}:${minutes}:${seconds}`;
+    }
+
+    // 获取站点数据
+    async function getSiteStatusData() {
+      try {
+        updateSiteState('loading');
+        elements.siteContainer.innerHTML = '<div class="loading"></div>';
+
+        const dates = [];
+        const today = dayjs(new Date().setHours(0, 0, 0, 0));
+
+        // 生成日期范围数组
+        for (let d = 0; d < config.countDays; d++) {
+          dates.push(today.subtract(d, 'day'));
+        }
+
+        // 生成自定义历史数据范围
+        const ranges = dates.map(
+          date => `${date.unix()}_${date.add(1, 'day').unix()}`
+        );
+        const start = dates[dates.length - 1].unix();
+        const end = dates[0].add(1, 'day').unix();
+        ranges.push(`${start}_${end}`);
+
+        // 缓存的有效期（秒）
+        const cacheDuration = 60;
+        let cachedData = localStorage.getItem('siteDataCache');
+        
+        // 检查缓存
+        if (cachedData) {
+          cachedData = JSON.parse(cachedData);
+          const currentTime = new Date().getTime();
+          
+          if (currentTime - cachedData.timestamp < cacheDuration * 1000) {
+            const processedData = dataProcessing(cachedData.data, dates);
+            updateSite(processedData);
+            renderSites(processedData);
+            return;
+          }
+        }
+
+        // 准备请求数据
+        const postdata = {
+          api_key: config.apiKey,
+          format: 'json',
+          logs: 1,
+          log_types: '1-2',
+          logs_start_date: start,
+          logs_end_date: end,
+          custom_uptime_ranges: ranges.join('-'),
+        };
+
+        // 发送请求
+        const response = await axios.post(config.globalApi, postdata, { timeout: 10000 });
+        
+        // 存储缓存
+        if (response.data.monitors) {
+          const monitorsCache = {
+            data: response.data.monitors,
+            timestamp: new Date().getTime()
+          };
+          localStorage.setItem('siteDataCache', JSON.stringify(monitorsCache));
+        }
+
+        // 处理数据
+        const processedData = dataProcessing(response.data.monitors, dates);
+        updateSite(processedData);
+        renderSites(processedData);
+        
+      } catch (error) {
+        console.error('获取数据失败:', error);
+        updateSiteState('wrong');
+        elements.siteContainer.innerHTML = `
+          <div style="text-align: center; padding: 40px;">
+            <h3>调用超限或请求错误，请刷新后重试</h3>
+            <button onclick="location.reload()" style="margin-top: 20px; padding: 8px 16px; background: #f5222d; color: white; border: none; border-radius: 4px; cursor: pointer;">
+              重试
+            </button>
+          </div>
+        `;
+      }
+    }
+
+    // 处理数据
+    function dataProcessing(data, dates) {
+      if (!data) return [];
+      
+      try {
+        let siteSortArr = '';
+        if (siteSortArr) {
+          siteSortArr = siteSortArr.split(',').map(v => v.trim()).reverse();
+          data = data.sort((v1, v2) => {
+            const i1 = siteSortArr.indexOf(v1.friendly_name.trim()) + 1;
+            const i2 = siteSortArr.indexOf(v2.friendly_name.trim()) + 1;
+            return (i2 == -1 ? 0 : i2) - (i1 == -1 ? 0 : i1);
+          });
+        }
+      } catch (error) {
+        console.error('排序出错:', error);
+      }
+
+      return data.map(monitor => {
+        const ranges = monitor.custom_uptime_ranges.split('-');
+        const average = formatNumber(ranges.pop());
+        const daily = [];
+        const map = {};
+
+        dates.forEach((date, index) => {
+          map[date.format('YYYYMMDD')] = index;
+          daily[index] = {
+            date: date,
+            uptime: formatNumber(ranges[index]),
+            down: { times: 0, duration: 0 }
+          };
+        });
+
+        // 计算总故障次数和时长
+        const total = monitor.logs.reduce((total, log) => {
+          if (log.type === 1) {
+            const date = dayjs.unix(log.datetime).format('YYYYMMDD');
+            total.duration += log.duration;
+            total.times += 1;
+            if (map[date] !== undefined) {
+              daily[map[date]].down.duration += log.duration;
+              daily[map[date]].down.times += 1;
+            }
+          }
+          return total;
+        }, { times: 0, duration: 0 });
+
+        const result = {
+          id: monitor.id,
+          name: monitor.friendly_name,
+          url: monitor.url,
+          average: average,
+          daily: daily,
+          total: total,
+          status: 'unknown'
+        };
+
+        if (monitor.status === 2) result.status = 'ok';
+        if (monitor.status === 9) result.status = 'down';
+
+        return result;
+      });
+    }
+
+    // 更新站点状态
+    function updateSite(data) {
+      if (!data || data.length === 0) return;
+      
+      // 统计数据
+      const okCount = data.filter(item => item.status === 'ok').length;
+      const downCount = data.filter(item => item.status === 'down').length;
+      const unknownCount = data.filter(item => item.status === 'unknown').length;
+      const isAllStatusOk = okCount === data.length;
+      const isAnyStatusOk = okCount > 0;
+
+      // 更新状态文本和样式
+      if (isAllStatusOk) {
+        updateSiteState('normal');
+      } else if (isAnyStatusOk) {
+        updateSiteState('error');
+      } else {
+        updateSiteState('allError');
+      }
+
+      // 更新概览数据
+      elements.totalCount.textContent = data.length;
+      elements.okCount.textContent = okCount;
+      elements.downCount.textContent = downCount;
+      
+      if (unknownCount > 0) {
+        elements.unknownCount.textContent = unknownCount;
+        elements.unknownCountContainer.style.display = 'flex';
+      } else {
+        elements.unknownCountContainer.style.display = 'none';
+      }
+
+      // 更新最后更新时间
+      const cachedData = localStorage.getItem('siteDataCache');
+      if (cachedData) {
+        const { timestamp } = JSON.parse(cachedData);
+        elements.lastUpdate.textContent = `上次更新于 ${formatTimestamp(timestamp)}`;
+      }
+
+      // 更新favicon
+      const faviconLink = document.querySelector('link[rel="shortcut icon"]');
+      faviconLink.href = isAllStatusOk ? './images/favicon.ico' : './images/favicon-down.ico';
+    }
+
+    // 更新站点状态显示
+    function updateSiteState(stateName) {
+      const statusNames = {
+        loading: '站点状态加载中',
+        error: '部分站点出现异常',
+        allError: '全部站点出现异常',
+        normal: '所有站点运行正常',
+        wrong: '数据请求失败'
+      };
+
+      state.siteState = stateName;
+      elements.statusText.textContent = statusNames[stateName];
+      
+      // 更新样式
+      elements.headerCover.className = `cover ${stateName}`;
+      elements.headerIcon.className = `icon ${stateName}`;
+      
+      // 更新提示文本
+      const tipElement = elements.statusText.nextElementSibling;
+      if (stateName === 'loading') {
+        tipElement.innerHTML = '<span>数据加载中...</span>';
+      } else if (stateName === 'wrong') {
+        tipElement.innerHTML = '<span>这可能是临时性问题，请刷新后重试</span>';
+      } else {
+        tipElement.innerHTML = '<span>加载完成</span>';
+      }
+    }
+
+    // 渲染站点列表
+    function renderSites(siteData) {
+      if (!siteData || siteData.length === 0) {
+        elements.siteContainer.innerHTML = '<div style="text-align: center; padding: 40px;">没有数据</div>';
+        return;
+      }
+
+      state.siteData = siteData;
+      let html = '<div class="sites">';
+      
+      siteData.forEach(site => {
+        html += `
+          <div class="site ${site.status !== 'ok' ? 'error' : 'normal'}" data-id="${site.id}">
+            <div class="meta">
+              <div class="name">${site.name}</div>
+              ${config.showLinks ? `<a class="link" href="${site.url}" target="_blank">链接</a>` : ''}
+              <div class="status ${site.status === 'ok' ? 'normal' : site.status === 'unknown' ? 'unknown' : 'error'}">
+                <div class="icon"></div>
+                <span class="tip">${
+                  site.status === 'ok' ? '正常访问' : 
+                  site.status === 'unknown' ? '状态未知' : '无法访问'
+                }</span>
+              </div>
+            </div>
+            <div class="timeline" data-id="${site.id}">
+        `;
+        
+        // 时间线
+        site.daily.forEach((data, index) => {
+          const { uptime, down, date } = data;
+          const time = date.format('YYYY-MM-DD');
+          let statusClass = '';
+          let tooltipText = '';
+          
+          if (uptime >= 100) {
+            statusClass = 'normal';
+            tooltipText = `可用率 ${formatNumber(uptime)}%`;
+          } else if (uptime <= 0 && down.times === 0) {
+            statusClass = 'none';
+            tooltipText = '无数据';
+          } else {
+            statusClass = 'error';
+            tooltipText = `故障 ${down.times} 次，累计 ${formatDuration(down.duration)}，可用率 ${formatNumber(uptime)}%`;
+          }
+          
+          html += `
+            <div class="line ${statusClass}" 
+                 title="${time}: ${tooltipText}" 
+                 data-site-id="${site.id}" 
+                 data-day-index="${index}"></div>
+          `;
+        });
+        
+        html += `
+            </div>
+            <div class="summary">
+              <div class="now">今天</div>
+              <div class="note">
+                ${site.total.times
+                  ? `最近 ${config.countDays} 天内故障 ${site.total.times} 次，累计 ${formatDuration(site.total.duration)}，平均可用率 ${site.average}%`
+                  : `最近 ${config.countDays} 天内可用率 ${site.average}%`
+                }
+              </div>
+              <div class="day">${site.daily[site.daily.length - 1].date.format('YYYY-MM-DD')}</div>
+            </div>
+          </div>
+        `;
+      });
+      
+      html += '</div>';
+      elements.siteContainer.innerHTML = html;
+      
+      // 添加点击事件
+      document.querySelectorAll('.timeline').forEach(el => {
+        el.addEventListener('click', (e) => {
+          const siteId = e.currentTarget.getAttribute('data-id');
+          const siteData = state.siteData.find(s => s.id === siteId);
+          if (siteData) {
+            showSiteDetails(siteData);
+          }
+        });
+      });
+    }
+
+    // 显示站点详情
+    function showSiteDetails(siteData) {
+      elements.modalTitle.textContent = siteData.name;
+      elements.detailModal.style.display = 'flex';
+      
+      // 设置提示信息
+      let alertClass = '';
+      let alertMessage = '';
+      
+      if (siteData.status !== 'ok') {
+        if (siteData.average >= 70) {
+          alertClass = 'background-color: #fffbe6; color: #faad14; border: 1px solid #ffe58f;';
+          alertMessage = '当前站点出现异常，请检查站点状态';
+        } else {
+          alertClass = 'background-color: #fff2f0; color: #f5222d; border: 1px solid #ffccc7;';
+          alertMessage = '当前站点持续异常，请立即检查站点状态或从监控项目中删除';
+        }
+      } else {
+        alertClass = 'background-color: #f6ffed; color: #52c41a; border: 1px solid #b7eb8f;';
+        alertMessage = '当前站点状态正常，请继续保持哦';
+      }
+      
+      elements.statusAlert.style = alertClass;
+      elements.statusAlert.textContent = alertMessage;
+      
+      // 绘制图表
+      drawChart(siteData);
+    }
+
+    // 绘制图表
+    function drawChart(siteData) {
+      const ctx = document.getElementById('siteChart').getContext('2d');
+      const chartData = [...siteData.daily].reverse().map(data => ({
+        time: data.date.format('YYYY-MM-DD'),
+        value: parseFloat(data.uptime)
+      }));
+      
+      // 销毁现有图表
+      if (state.chartInstance) {
+        state.chartInstance.destroy();
+      }
+      
+      // 创建新图表
+      state.chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: chartData.map(item => item.time),
+          datasets: [{
+            label: '当日可用率 (%)',
+            data: chartData.map(item => item.value),
+            borderColor: '#3bd672',
+            backgroundColor: 'rgba(59, 214, 114, 0.1)',
+            tension: 0.4,
+            fill: true
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function(value) {
+                  return value + '%';
+                }
+              }
+            }
+          },
+          plugins: {
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `可用率: ${context.raw}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // 刷新状态
+    function refreshStatus() {
+      const currentTime = Date.now();
+      if (currentTime - state.lastClickTime < 60000) {
+        alert('请稍后再尝试刷新');
+        return;
+      }
+      
+      // 清除缓存
+      localStorage.removeItem('siteDataCache');
+      state.lastClickTime = currentTime;
+      getSiteStatusData();
+    }
+
+    // 初始化应用
+    window.addEventListener('DOMContentLoaded', init);
+  </script>
+</body>
+</html>

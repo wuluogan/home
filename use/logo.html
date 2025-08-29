@@ -1,0 +1,1903 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Free Text-to-Logo and Text-to-Favicon Generator</title>
+    <meta name="description" content="Create stunning logos and favicons from text for free with Logo.surf. Our easy-to-use text-to-logo & text-to-favicon generator offers customizable designs in multiple formats.">
+    <link rel="canonical" href="https://www.logo.surf/">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/svg.js/3.1.2/svg.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.7.1/jszip.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" type="image/png" sizes="1280x1280" href="https://i.v2ex.co/jG086QPhl.png">
+    <script defer data-domain="logo.surf" src="https://click.pageview.click/js/script.js"></script>
+    <script>
+      tailwind.config = {
+          theme: {
+              extend: {
+                  colors: {
+                      'theme': '#111827',
+                      'theme-dark': '#020617',
+                  }
+              }
+          }
+      }
+    </script>
+    <style>
+      body {
+          font-family: 'Poppins', sans-serif;
+      }
+      .color-picker-wrapper {
+          display: flex;
+          align-items: center;
+      }
+      .color-preview {
+          width: 30px;
+          height: 30px;
+          border: 1px solid #ccc;
+          margin-right: 10px;
+          cursor: pointer;
+      }
+      .color-input {
+          flex-grow: 1;
+      }
+      @media (max-width: 640px) {
+          .preview-small-screen {
+              max-width: 80vw;
+              margin: 0 auto;
+          }
+      }
+      .grid-background {
+          background-color: #f0f4f8;
+          background-image: linear-gradient(45deg, #e2e8f0 25%, transparent 25%), linear-gradient(-45deg, #e2e8f0 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #e2e8f0 75%), linear-gradient(-45deg, transparent 75%, #e2e8f0 75%);
+          background-size: 20px 20px;
+          background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+      }
+      .example-clicked {
+          animation: pulse 0.3s;
+      }
+      .base-button {
+          background: #111827;
+          color: white;
+          padding: 8px 16px;
+          border-radius: 4px;
+          transition: all .3s ease;
+      }
+      .base-button:hover {
+          background: #374151;
+      }
+      @keyframes pulse {
+          0% {
+              transform: scale(1);
+          }
+          50% {
+              transform: scale(1.05);
+          }
+          100% {
+              transform: scale(1);
+          }
+      }
+      #preview svg {
+          width: 100%;
+          height: 100%;
+      }
+      #logo-gallery {
+          pointer-events: none;
+      }
+      #logo-gallery-inner {
+          display: grid;
+          grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+          gap: 1rem;
+          padding: 1rem;
+      }
+      #logo-gallery-inner svg {
+          width: 100%;
+          height: auto;
+      }
+      @media (max-width: 640px) {
+          #logo-gallery-inner {
+              grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+              gap: 0.5rem;
+          }
+      }
+      .rotate-180 {
+        transform: rotate(180deg);
+      }
+    </style>
+  </head>
+  <body class="bg-gray-50">
+    <div class="container mx-auto px-4 py-8">
+      <div>
+        <!-- <h2 class="text-3xl sm:text-4xl font-semibold mb-6 text-center text-gray-900">WLogo</h2> -->
+        <div class="flex flex-col lg:flex-row gap-6 mb-12" id="generate-favicon">
+          <div class="w-full lg:w-1/2">
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+              <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Settings</h2>
+              <div class="mb-4">
+                <label for="text" class="block mb-2 text-gray-600">Text</label>
+                <input type="text" id="text" class="w-full border rounded px-3 py-2" value="AI">
+              </div>
+              <div class="flex flex-wrap -mx-2 mb-4">
+                <div class="w-1/2 px-2">
+                  <label for="size" class="block mb-2 text-gray-600">Size</label>
+                  <input type="number" id="size" class="w-full border rounded px-3 py-2" value="512" disabled>
+                </div>
+                <div class="w-1/2 px-2">
+                  <label for="radius" class="block mb-2 text-gray-600">Radius</label>
+                  <input type="number" id="radius" class="w-full border rounded px-3 py-2" value="80">
+                </div>
+              </div>
+              <div class="mb-4">
+                <label for="bgColor" class="block mb-2 text-gray-600">Background Color</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="bgColorPicker" class="hidden">
+                  <div id="bgColorPreview" class="color-preview"></div>
+                  <input type="text" id="bgColor" class="color-input w-full border rounded px-3 py-2" value="#131516">
+                </div>
+              </div>
+              <div class="mb-4">
+                <label for="fontFamily" class="block mb-2 text-gray-600">Font Family</label>
+                <div class="flex">
+                  <input type="text" id="fontFamily" class="w-2/3 border rounded-l px-3 py-2" placeholder="Enter font name or select" value="Arial">
+                  <select id="fontFamilySelect" class="w-1/3 border border-l-0 rounded-r px-3 py-2">
+                    <option value="">Select font</option>
+                    <option value="Arial">Arial</option>
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Times New Roman">Times New Roman</option>
+                    <option value="Courier">Courier</option>
+                    <option value="Verdana">Verdana</option>
+                    <option value="Georgia">Georgia</option>
+                    <option value="Palatino">Palatino</option>
+                    <option value="Garamond">Garamond</option>
+                    <option value="Bookman">Bookman</option>
+                    <option value="Comic Sans MS">Comic Sans MS</option>
+                    <option value="Trebuchet MS">Trebuchet MS</option>
+                    <option value="Arial Black">Arial Black</option>
+                    <option value="Impact">Impact</option>
+                  </select>
+                </div>
+              </div>
+              <div class="gap-4 mb-4">
+                <div>
+                  <label for="fontWeight" class="block mb-2 text-gray-600">Font Weight</label>
+                  <select id="fontWeight" class="w-full border rounded px-3 py-2">
+                    <option value="normal">Normal</option>
+                    <option value="bold">Bold</option>
+                  </select>
+                </div>
+              </div>
+              <div class="mb-6">
+                <label for="textColor" class="block mb-2 text-gray-600">Text Color</label>
+                <div class="color-picker-wrapper">
+                  <input type="color" id="textColorPicker" class="hidden">
+                  <div id="textColorPreview" class="color-preview"></div>
+                  <input type="text" id="textColor" class="color-input w-full border rounded px-3 py-2" value="#70e000">
+                </div>
+              </div>
+              <div class="mb-4">
+                <label for="verticalOffset" class="block mb-2 text-gray-600">Fine-tune Vertical Position</label>
+                <input type="range" id="verticalOffset" min="-30" max="30" value="0" step="1" class="w-full">
+                <span id="verticalOffsetValue" class="text-sm text-gray-500">0%</span>
+              </div>
+              <div class="flex flex-col sm:flex-row justify-between">
+                <button id="resetBtn" class="base-button mb-2 sm:mb-0">Reset to Default</button>
+                <button id="generateBtn" class="hidden bg-theme text-white px-4 py-2 rounded hover:bg-theme-dark">Generate Favicons</button>
+              </div>
+              <div class="mt-6">
+                <h3 class="text-lg font-semibold mb-2 text-gray-700">Recommended Color Schemes</h3>
+                <div id="colorSchemes" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  <!-- Color schemes will be dynamically added here -->
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="w-full lg:w-1/2">
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6">
+              <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Preview</h2>
+              <div class="w-full max-w-lg mx-auto preview-small-screen">
+                <div id="preview" class="grid-background w-full aspect-square bg-gray-100 flex items-center justify-center border border-gray-300 p-4"></div>
+              </div>
+              <div class="mt-4 flex flex-wrap justify-center gap-2">
+                <button id="downloadPng" class="base-button">Download PNG</button>
+                <button id="downloadSvg" class="base-button">Download SVG</button>
+                <button id="downloadZip" class="base-button">Download All (ZIP)</button>
+              </div>
+              <p class="mt-4 text-sm text-gray-600">
+                Download All (ZIP) includes: favicon.ico, favicon.svg, favicon-16x16.png, favicon-32x32.png, favicon-180x180.png, favicon-512x512.png, favicon-2048x2048.png
+              </p>
+              <p class="text-sm text-gray-700 mt-2 font-medium bg-yellow-100 p-2 rounded">
+                <span class="font-semibold">Tip:</span> For emojis or special symbols, we recommend using PNG to ensure consistent display across all systems.
+              </p>
+              <p class="mt-2 text-sm text-gray-600 bg-gray-100 p-2 rounded">
+                For additional PNG optimization, check out <a href="https://small.im" target="_blank" class="text-theme underline">https://small.im</a>
+              </p>
+            </div>
+            <div class="bg-white rounded-lg border border-gray-200 p-4 sm:p-6 mt-6">
+              <h2 class="text-xl sm:text-2xl font-semibold mb-4 text-gray-700">Favicon HTML Code</h2>
+              <pre id="htmlCode" class="bg-gray-100 p-4 rounded overflow-x-auto text-sm"><code>&lt;link rel="apple-touch-icon" sizes="180x180" href="/favicon-180x180.png"&gt;
+&lt;link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"&gt;
+&lt;link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png"&gt;</code></pre>
+              <p class="mt-2 text-sm text-gray-600 bg-gray-100 p-2 rounded">
+                To test if the favicon is configured correctly, you can use <a href="https://favicon.im " target="_blank" class="text-theme underline">https://favicon.im</a>
+              </p>
+              <button id="copyHtmlCode" class="mt-4 base-button">Copy HTML Code</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <footer class="py-16 w-full mt-auto border-t border-theme bg-theme text-white z-20">
+      <div class="container mx-auto px-4">
+        <div class="flex flex-col justify-center items-center mt-4">
+          <p class="text-center text-xs text-white opacity-40 mt-2">
+            @ 2025
+          </p>
+        </div>
+      </div>
+    </footer>
+    <script>
+let defaultSize = 512
+
+const generateIconSVG = (options) => {
+  const {
+    text = 'AI',
+      size = defaultSize,
+      bgColor = '#131516',
+      radius = 80,
+      fontFamily = 'Arial',
+      fontWeight = 'normal',
+      textColor = '#70e000',
+      verticalOffset = 0
+  } = options;
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("xmlns", svgNS);
+
+  const rect = document.createElementNS(svgNS, "rect");
+  rect.setAttribute("width", size);
+  rect.setAttribute("height", size);
+  rect.setAttribute("fill", bgColor);
+  rect.setAttribute("rx", radius);
+  rect.setAttribute("ry", radius);
+  svg.appendChild(rect);
+
+  const textElement = document.createElementNS(svgNS, "text");
+  textElement.setAttribute("x", "50%");
+  textElement.setAttribute("y", "50%");
+  textElement.setAttribute("dominant-baseline", "central");
+  textElement.setAttribute("text-anchor", "middle");
+  textElement.setAttribute("font-family", fontFamily);
+  textElement.setAttribute("font-weight", fontWeight);
+  textElement.setAttribute("fill", textColor);
+  textElement.textContent = text;
+  svg.appendChild(textElement);
+
+  const adjustTextSizeAndPosition = () => {
+    const isAllEnglish = /^[A-Za-z0-9\s]+$/.test(text);
+    const charCount = text.length;
+
+    let fontSize;
+    if (charCount <= 2) {
+      fontSize = size * 0.8;
+    } else if (isAllEnglish) {
+      fontSize = size * 0.75;
+    } else {
+      fontSize = size * 0.6;
+    }
+
+    textElement.setAttribute("font-size", fontSize);
+
+    const maxWidth = size * 0.95;
+    const maxHeight = size * 0.95;
+    const scaleFactor = isAllEnglish ? 0.98 : 0.95;
+
+    let iterations = 0;
+    const maxIterations = 50;
+
+    while (fontSize > 1 && iterations < maxIterations) {
+      const bbox = textElement.getBBox();
+      if (bbox.width <= maxWidth && bbox.height <= maxHeight) {
+        break;
+      }
+      fontSize *= scaleFactor;
+      textElement.setAttribute("font-size", fontSize);
+      iterations++;
+    }
+
+    if (verticalOffset !== 0) {
+      const offsetPixels = (size * verticalOffset) / 100;
+      textElement.setAttribute("dy", `${offsetPixels}`);
+    }
+  };
+
+  document.body.appendChild(svg);
+  adjustTextSizeAndPosition();
+  document.body.removeChild(svg);
+
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(svg);
+};
+
+const generateIconSVG4 = (options) => {
+  const {
+    text = 'AI',
+      size = defaultSize,
+      bgColor = '#131516',
+      radius = 80,
+      fontFamily = 'Arial',
+      fontWeight = 'normal',
+      textColor = '#70e000',
+      verticalOffset = 0
+  } = options;
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("xmlns", svgNS);
+
+  const rect = document.createElementNS(svgNS, "rect");
+  rect.setAttribute("width", size);
+  rect.setAttribute("height", size);
+  rect.setAttribute("fill", bgColor);
+  rect.setAttribute("rx", radius);
+  rect.setAttribute("ry", radius);
+  svg.appendChild(rect);
+
+  const textElement = document.createElementNS(svgNS, "text");
+  textElement.setAttribute("x", "50%");
+  textElement.setAttribute("y", "50%");
+  textElement.setAttribute("text-anchor", "middle");
+  textElement.setAttribute("font-family", fontFamily);
+  textElement.setAttribute("font-weight", fontWeight);
+  textElement.setAttribute("fill", textColor);
+  textElement.textContent = text;
+  svg.appendChild(textElement);
+
+  function autoAdjustVerticalPosition(text, fontFamily, fontSize, fontWeight, svgSize) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+    const metrics = ctx.measureText(text);
+
+    const fontHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+
+    const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+    const baselineOffset = metrics.fontBoundingBoxDescent;
+
+    const textMiddleToBaseline = actualHeight / 2 - metrics.actualBoundingBoxDescent;
+
+    const idealBaseline = svgSize / 2 + textMiddleToBaseline;
+    const currentBaseline = svgSize / 2 + baselineOffset;
+    const offset = (idealBaseline - currentBaseline) / svgSize * 100;
+
+    return offset;
+  }
+
+  const adjustTextSizeAndPosition = () => {
+    const isAllEnglish = /^[A-Za-z0-9\s]+$/.test(text);
+    const charCount = text.length;
+
+    let fontSize;
+    if (charCount <= 2) {
+      fontSize = size * 0.8;
+    } else if (isAllEnglish) {
+      fontSize = size * 0.75;
+    } else {
+      fontSize = size * 0.6;
+    }
+
+    textElement.setAttribute("font-size", fontSize);
+
+    const maxWidth = size * 0.95;
+    const maxHeight = size * 0.95;
+    const scaleFactor = isAllEnglish ? 0.98 : 0.95;
+
+    let iterations = 0;
+    const maxIterations = 50;
+
+    while (fontSize > 1 && iterations < maxIterations) {
+      const bbox = textElement.getBBox();
+      if (bbox.width <= maxWidth && bbox.height <= maxHeight) {
+        break;
+      }
+      fontSize *= scaleFactor;
+      textElement.setAttribute("font-size", fontSize);
+      iterations++;
+    }
+
+    const autoOffset = autoAdjustVerticalPosition(text, fontFamily, fontSize, fontWeight, size);
+
+    const totalOffset = autoOffset + parseFloat(verticalOffset);
+
+    textElement.setAttribute("dy", `${totalOffset}%`);
+  };
+
+  document.body.appendChild(svg);
+  adjustTextSizeAndPosition();
+  document.body.removeChild(svg);
+
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(svg);
+};
+
+const generateIconSVG3 = (options) => {
+  const {
+    text = 'AI',
+      size = defaultSize,
+      bgColor = '#131516',
+      radius = 80,
+      fontFamily = 'Arial',
+      fontWeight = 'normal',
+      textColor = '#70e000',
+      verticalOffset = 0
+  } = options;
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("xmlns", svgNS);
+
+  const rect = document.createElementNS(svgNS, "rect");
+  rect.setAttribute("width", size);
+  rect.setAttribute("height", size);
+  rect.setAttribute("fill", bgColor);
+  rect.setAttribute("rx", radius);
+  rect.setAttribute("ry", radius);
+  svg.appendChild(rect);
+
+  const textElement = document.createElementNS(svgNS, "text");
+  textElement.setAttribute("x", "50%");
+  textElement.setAttribute("y", "50%");
+  textElement.setAttribute("text-anchor", "middle");
+  textElement.setAttribute("font-family", fontFamily);
+  textElement.setAttribute("font-weight", fontWeight);
+  textElement.setAttribute("fill", textColor);
+  textElement.textContent = text;
+  svg.appendChild(textElement);
+
+  function autoAdjustVerticalPosition(text, fontFamily, fontSize, svgSize) {
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontWeight} ${fontSize}px ${fontFamily}`;
+
+    const metrics = ctx.measureText(text);
+    const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+    console.log('actualheight', actualHeight)
+    const centerY = svgSize / 2;
+    const textY = centerY + (metrics.actualBoundingBoxAscent - actualHeight / 2);
+    const offset = (textY - centerY) / svgSize * 100;
+
+    return -offset;
+  }
+
+  const adjustTextSizeAndPosition = () => {
+    const isAllEnglish = /^[A-Za-z0-9\s]+$/.test(text);
+    const charCount = text.length;
+
+    let fontSize;
+    if (charCount <= 2) {
+      fontSize = size * 0.8;
+    } else if (isAllEnglish) {
+      fontSize = size * 0.75;
+    } else {
+      fontSize = size * 0.6;
+    }
+
+    textElement.setAttribute("font-size", fontSize);
+
+    const maxWidth = size * 0.95;
+    const maxHeight = size * 0.95;
+    const scaleFactor = isAllEnglish ? 0.98 : 0.95;
+
+    let iterations = 0;
+    const maxIterations = 50;
+
+    while (fontSize > 1 && iterations < maxIterations) {
+      const bbox = textElement.getBBox();
+      if (bbox.width <= maxWidth && bbox.height <= maxHeight) {
+        break;
+      }
+      fontSize *= scaleFactor;
+      textElement.setAttribute("font-size", fontSize);
+      iterations++;
+    }
+
+    const autoOffset = autoAdjustVerticalPosition(text, fontFamily, fontSize, size);
+
+    const totalOffset = autoOffset + parseFloat(verticalOffset);
+    console.log('total offset', totalOffset)
+
+    textElement.setAttribute("dy", `${totalOffset}%`);
+  };
+
+  document.body.appendChild(svg);
+  adjustTextSizeAndPosition();
+  document.body.removeChild(svg);
+
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(svg);
+};
+
+const generateIconSVG2 = (options) => {
+  const {
+    text = 'AI',
+      size = defaultSize,
+      bgColor = '#131516',
+      radius = 80,
+      fontFamily = 'Arial',
+      fontWeight = 'normal',
+      textColor = '#70e000',
+      verticalOffset = 0
+  } = options;
+
+  const svgNS = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(svgNS, "svg");
+
+  svg.setAttribute("viewBox", `0 0 ${size} ${size}`);
+  svg.setAttribute("xmlns", svgNS);
+ 
+  const rect = document.createElementNS(svgNS, "rect");
+  rect.setAttribute("width", size);
+  rect.setAttribute("height", size);
+  rect.setAttribute("fill", bgColor);
+  rect.setAttribute("rx", radius);
+  rect.setAttribute("ry", radius);
+  svg.appendChild(rect);
+
+
+  const textElement = document.createElementNS(svgNS, "text");
+  textElement.setAttribute("x", "50%");
+  textElement.setAttribute("y", "50%");
+  textElement.setAttribute("dominant-baseline", "central");
+  textElement.setAttribute("text-anchor", "middle");
+  textElement.setAttribute("font-family", fontFamily);
+  textElement.setAttribute("font-weight", fontWeight);
+  textElement.setAttribute("fill", textColor);
+  textElement.textContent = text;
+  svg.appendChild(textElement);
+
+  function autoAdjustVerticalPosition(text, fontFamily, fontSize, svgSize) {
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    ctx.font = `${fontSize}px ${fontFamily}`;
+
+    const metrics = ctx.measureText(text);
+
+    const actualHeight = metrics.actualBoundingBoxAscent + metrics.actualBoundingBoxDescent;
+
+    const centerY = svgSize / 2;
+    const textY = centerY + (metrics.actualBoundingBoxAscent - actualHeight / 2);
+    const offset = (textY - centerY) / svgSize * 100;
+
+    return -offset;
+  }
+
+  const adjustTextSizeAndPosition = () => {
+    const isAllEnglish = /^[A-Za-z0-9\s]+$/.test(text);
+    const charCount = text.length;
+
+    let fontSize;
+    if (charCount <= 2) {
+      fontSize = size * 0.8; // Larger initial size for 1-2 characters
+    } else if (isAllEnglish) {
+      fontSize = size * 0.75; // Increased initial size for English
+    } else {
+      fontSize = size * 0.6; // Slightly increased for other characters
+    }
+
+    textElement.setAttribute("font-size", fontSize);
+
+    const maxWidth = size * 0.95;
+    const maxHeight = size * 0.95;
+    const scaleFactor = isAllEnglish ? 0.98 : 0.95;
+
+    let iterations = 0;
+    const maxIterations = 50; // Prevent infinite loop
+
+    while (fontSize > 1 && iterations < maxIterations) {
+      const bbox = textElement.getBBox();
+      if (bbox.width <= maxWidth && bbox.height <= maxHeight) {
+        break;
+      }
+      fontSize *= scaleFactor;
+      textElement.setAttribute("font-size", fontSize);
+      iterations++;
+    }
+
+    // Fine-tune vertical position
+    const bbox = textElement.getBBox();
+    const verticalOffset = (size - bbox.height) / 2 - bbox.y;
+    textElement.setAttribute("dy", verticalOffset);
+  };
+
+  // We need to append the SVG to the document temporarily to get accurate measurements
+  document.body.appendChild(svg);
+  adjustTextSizeAndPosition();
+  document.body.removeChild(svg);
+
+  // Convert SVG to string
+  const serializer = new XMLSerializer();
+  return serializer.serializeToString(svg);
+};
+
+
+
+const colorSchemes = [{
+    bg: '#1a365d',
+    text: '#ffffff',
+    name: 'Deep Blue'
+  },
+  {
+    bg: '#2D3748',
+    text: '#ED8936',
+    name: 'Dark Gray & Orange'
+  },
+  {
+    bg: '#744210',
+    text: '#F6E05E',
+    name: 'Brown & Yellow'
+  },
+  {
+    bg: '#1A202C',
+    text: '#63B3ED',
+    name: 'Almost Black & Sky Blue'
+  },
+  {
+    bg: '#702459',
+    text: '#FBBF24',
+    name: 'Purple & Yellow'
+  },
+  {
+    bg: '#065F46',
+    text: '#6EE7B7',
+    name: 'Dark Green & Light Green'
+  },
+  {
+    bg: '#3730A3',
+    text: '#FCA5A5',
+    name: 'Indigo & Light Red'
+  },
+  {
+    bg: '#131516',
+    text: '#70e000',
+    name: 'Black & Neon Green'
+  },
+  {
+    bg: '#E53E3E',
+    text: '#FFFFFF',
+    name: 'Red & White'
+  },
+  {
+    bg: '#2B6CB0',
+    text: '#BEE3F8',
+    name: 'Blue & Light Blue'
+  },
+  {
+    bg: '#2D3748',
+    text: '#F7FAFC',
+    name: 'Dark Gray & Off White'
+  },
+  {
+    bg: '#975A16',
+    text: '#FEFCBF',
+    name: 'Brown & Pale Yellow'
+  },
+  {
+    bg: '#276749',
+    text: '#C6F6D5',
+    name: 'Green & Pale Green'
+  },
+  {
+    bg: '#6B46C1',
+    text: '#E9D8FD',
+    name: 'Purple & Lavender'
+  },
+  {
+    bg: '#2C7A7B',
+    text: '#81E6D9',
+    name: 'Teal & Light Teal'
+  },
+  {
+    bg: '#9C4221',
+    text: '#FEEBC8',
+    name: 'Burnt Orange & Peach'
+  },
+  {
+    bg: '#000000',
+    text: '#FFA31A',
+    name: 'Bold Black & Yellow'
+  }
+];
+
+const createColorSchemeButtons = () => {
+  const container = document.getElementById('colorSchemes');
+  colorSchemes.forEach((scheme, index) => {
+    const button = document.createElement('button');
+    button.className = 'py-2 px-2.5 rounded flex items-center justify-start hover:ring-2 hover:ring-gray-300 transition-all w-full';
+    button.style.backgroundColor = scheme.bg;
+    button.innerHTML = `
+                 <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background-color: ${scheme.text};"></span>
+                 <span class="ml-2 text-xs truncate" style="color: ${scheme.text};">${scheme.name}</span>
+             `;
+    button.title = scheme.name; // Add title for tooltip on hover
+    button.addEventListener('click', () => applyColorScheme(index));
+    container.appendChild(button);
+  });
+};
+
+const applyColorScheme = (index) => {
+  const scheme = colorSchemes[index];
+  document.getElementById('bgColor').value = scheme.bg;
+  document.getElementById('textColor').value = scheme.text;
+  document.getElementById('bgColorPicker').value = scheme.bg;
+  document.getElementById('textColorPicker').value = scheme.text;
+  document.getElementById('bgColorPreview').style.backgroundColor = scheme.bg;
+  document.getElementById('textColorPreview').style.backgroundColor = scheme.text;
+  generateIcon();
+};
+
+
+const defaultSettings = {
+  text: 'AI',
+  size: defaultSize,
+  bgColor: '#131516',
+  radius: 80,
+  fontFamily: 'Arial',
+  fontWeight: 'normal',
+  textColor: '#70e000',
+  verticalOffset: 0
+};
+
+const generateIcon = () => {
+  const options = {
+    text: document.getElementById('text').value,
+    size: parseInt(document.getElementById('size').value),
+    bgColor: document.getElementById('bgColor').value,
+    radius: parseInt(document.getElementById('radius').value),
+    fontFamily: document.getElementById('fontFamily').value || 'Arial, sans-serif',
+    fontWeight: document.getElementById('fontWeight').value,
+    textColor: document.getElementById('textColor').value,
+    verticalOffset: document.getElementById('verticalOffset').value || 0
+  };
+
+  const svgString = generateIconSVG(options);
+
+  const preview = document.getElementById('preview');
+  preview.innerHTML = svgString;
+  return svgString;
+};
+
+const createFavicon = (size) => {
+  const svgString = generateIcon();
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      });
+    };
+    const encodedSvg = encodeURIComponent(svgString);
+    img.src = `data:image/svg+xml;charset=utf-8,${encodedSvg}`;
+  });
+};
+
+const generateFavicons = async () => {
+  const zip = new JSZip();
+
+  // Add SVG
+  const svgString = generateIcon();
+  zip.file("favicon.svg", svgString);
+
+  // Add PNGs
+  const sizes = [16, 32, 180, 512, 2048];
+  for (let size of sizes) {
+    const blob = await createFavicon(size);
+    zip.file(`favicon-${size}x${size}.png`, blob);
+  }
+
+  // Add ICO (16x16 and 32x32 combined)
+  const ico16 = await createFavicon(16);
+  const ico32 = await createFavicon(32);
+  // Note: Proper ICO creation requires additional processing
+  // This is a simplified version
+  const icoBlob = new Blob([ico16, ico32], {
+    type: "image/x-icon"
+  });
+  zip.file("favicon.ico", icoBlob);
+
+  // Generate ZIP file
+  const content = await zip.generateAsync({
+    type: "blob"
+  });
+  saveAs(content, "favicons.zip");
+};
+
+// Color picker setup
+const setupColorPicker = (inputId, pickerId, previewId) => {
+  const input = document.getElementById(inputId);
+  const picker = document.getElementById(pickerId);
+  const preview = document.getElementById(previewId);
+
+  const updateColor = () => {
+    preview.style.backgroundColor = input.value;
+    picker.value = input.value;
+    generateIcon();
+  };
+
+  input.addEventListener('input', updateColor);
+  input.addEventListener('change', () => {
+    if (/^#[0-9A-F]{6}$/i.test(input.value)) {
+      updateColor();
+    } else {
+      input.value = '#000000';
+      updateColor();
+    }
+  });
+
+  picker.addEventListener('input', () => {
+    input.value = picker.value;
+    updateColor();
+  });
+
+  preview.addEventListener('click', () => picker.click());
+
+  updateColor();
+};
+
+setupColorPicker('bgColor', 'bgColorPicker', 'bgColorPreview');
+setupColorPicker('textColor', 'textColorPicker', 'textColorPreview');
+
+// Reset functionality
+const resetToDefault = () => {
+  Object.keys(defaultSettings).forEach(key => {
+    const element = document.getElementById(key);
+    if (element) {
+      element.value = defaultSettings[key];
+      if (key === 'bgColor' || key === 'textColor') {
+        const preview = document.getElementById(`${key}Preview`);
+        const picker = document.getElementById(`${key}Picker`);
+        preview.style.backgroundColor = defaultSettings[key];
+        picker.value = defaultSettings[key];
+      }
+    }
+  });
+  document.getElementById('verticalOffsetValue').textContent = '0%';
+
+  generateIcon();
+};
+
+// Copy HTML code functionality
+document.getElementById('copyHtmlCode').addEventListener('click', () => {
+  const htmlCode = document.getElementById('htmlCode').textContent;
+  navigator.clipboard.writeText(htmlCode).then(() => {
+    alert('HTML code copied to clipboard!');
+  });
+});
+
+// Event listeners
+document.getElementById('resetBtn').addEventListener('click', resetToDefault);
+document.getElementById('generateBtn').addEventListener('click', generateIcon);
+document.getElementById('downloadZip').addEventListener('click', generateFavicons);
+document.getElementById('downloadSvg').addEventListener('click', () => {
+  const svgString = generateIcon();
+  const blob = new Blob([svgString], {
+    type: 'image/svg+xml;charset=utf-8'
+  });
+  saveAs(blob, 'favicon.svg');
+});
+// document.getElementById('downloadIco').addEventListener('click', async () => {
+//     const ico16 = await createFavicon(16);
+//     const ico32 = await createFavicon(32);
+//     const icoBlob = new Blob([ico16, ico32], {type: "image/x-icon"});
+//     saveAs(icoBlob, 'favicon.ico');
+// });
+
+function svgToPng(svgString, size) {
+  return new Promise((resolve, reject) => {
+    const canvas = document.createElement('canvas');
+    const scale = 4;
+    canvas.width = size * scale;
+    canvas.height = size * scale;
+    const ctx = canvas.getContext('2d');
+
+    ctx.scale(scale, scale);
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.drawImage(img, 0, 0, size, size);
+      canvas.toBlob((blob) => {
+        resolve(blob);
+      }, 'image/png');
+    };
+    img.onerror = (err) => {
+      reject(err);
+    };
+
+    const encodedSvg = encodeURIComponent(svgString);
+    img.src = `data:image/svg+xml;charset=utf-8,${encodedSvg}`;
+  });
+}
+
+document.getElementById('downloadPng').addEventListener('click', async () => {
+  const svgString = generateIcon();
+  const size = parseInt(document.getElementById('size').value);
+  try {
+    const pngBlob = await svgToPng(svgString, size);
+    const url = URL.createObjectURL(pngBlob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'favicon.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (err) {
+    console.error('Error generating PNG:', err);
+    alert('There was an error generating the PNG. Please try again.');
+  }
+});
+
+
+const verticalOffsetInput = document.getElementById('verticalOffset');
+const verticalOffsetValue = document.getElementById('verticalOffsetValue');
+
+verticalOffsetInput.addEventListener('input', function() {
+  console.log('changed', this.value)
+  verticalOffsetValue.textContent = `${this.value}%`;
+  generateIcon();
+});
+
+// Add event listeners to all input elements
+const inputElements = document.querySelectorAll('input, select');
+inputElements.forEach(element => {
+  element.addEventListener('input', generateIcon);
+});
+
+const fontFamilyInput = document.getElementById('fontFamily');
+const fontFamilySelect = document.getElementById('fontFamilySelect');
+
+fontFamilySelect.addEventListener('change', function() {
+  console.log('this.value', this.value)
+  if (this.value) {
+    fontFamilyInput.value = this.value;
+    generateIcon();
+  }
+});
+
+fontFamilyInput.addEventListener('blur', generateIcon);
+
+fontFamilyInput.addEventListener('input', function() {
+  fontFamilySelect.value = '';
+});
+
+
+// example
+function createExampleDiv(svg, title, config) {
+  const div = document.createElement('div');
+  div.className = 'flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity';
+  div.innerHTML = `
+         <div class="w-16 h-16 mb-2">
+           ${svg}
+         </div>
+         <p class="text-sm text-gray-600">${title}</p>
+       `;
+
+  div.addEventListener('click', () => {
+    applyConfig(config);
+    div.classList.add('example-clicked');
+    setTimeout(() => div.classList.remove('example-clicked'), 300);
+  });
+
+  return div;
+}
+
+// Generate examples
+const examples = [
+  // {
+  //   options: {
+  //     text: 'PH',
+  //     size: 512,
+  //     bgColor: '#000000',
+  //     textColor: '#FFA500',
+  //     fontFamily: 'Arial, Arial, sans-serif',
+  //     fontWeight: 'normal',
+  //     radius: 0
+  //   },
+  //   title: 'Video Hub Style Part 2'
+  // },
+  {
+    options: {
+      text: 'Y',
+      size: 512,
+      bgColor: '#FF6600',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial Narrow, Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 16,
+      fontSize: 300
+    },
+    title: 'Y Combinator Inspired'
+  },
+
+  {
+    options: {
+      text: 'SHIP',
+      size: 512,
+      bgColor: '#2E8B57',
+      textColor: '#FFFFFF',
+      fontFamily: 'Impact, ImpactFallback, sans-serif',
+      fontWeight: 'normal',
+      radius: 16
+    },
+    title: 'Ship It'
+  },
+
+  {
+    options: {
+      text: 'P',
+      size: 512,
+      bgColor: '#E60023',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 256
+    },
+    title: 'Visual Discovery Engine'
+  },
+  {
+    options: {
+      text: 'B',
+      size: 512,
+      bgColor: '#FF0000',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 8
+    },
+    title: 'News Network'
+  },
+  {
+    options: {
+      text: 'T',
+      size: 512,
+      bgColor: '#00A3E0',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica Neue, Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 32
+    },
+    title: 'Telecom Company'
+  },
+  {
+    options: {
+      text: '4',
+      size: 512,
+      bgColor: '#FFE600',
+      textColor: '#000000',
+      fontFamily: 'Arial Black, Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'French TV Channel'
+  },
+  {
+    options: {
+      text: 'C',
+      size: 512,
+      bgColor: '#00539B',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'Banking Giant'
+  },
+  {
+    options: {
+      text: 'U',
+      size: 512,
+      bgColor: '#232F3E',
+      textColor: '#FF9900',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 64
+    },
+    title: 'Cloud Computing Leader'
+  },
+  {
+    options: {
+      text: '42',
+      size: 512,
+      bgColor: '#2E8B57',
+      textColor: '#FFFFFF',
+      fontFamily: 'Courier, monospace',
+      fontWeight: 'bold',
+      radius: 32
+    },
+    title: 'Answer to Everything'
+  },
+  {
+    options: {
+      text: '♫',
+      size: 512,
+      bgColor: '#FF1493',
+      textColor: '#FFFFFF',
+      fontFamily: 'Georgia, serif',
+      fontWeight: 'bold',
+      radius: 100
+    },
+    title: 'Music Note'
+  },
+
+  {
+    options: {
+      text: 'f',
+      size: 512,
+      bgColor: '#1877F2',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica, Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 128
+    },
+    title: 'Social Network Giant'
+  },
+
+  {
+    options: {
+      text: 'in',
+      size: 512,
+      bgColor: '#0A66C2',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 8
+    },
+    title: 'Professional Network'
+  },
+  {
+    options: {
+      text: '𝕏',
+      size: 512,
+      bgColor: '#000000',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 128
+    },
+    title: 'Microblogging Platform'
+  },
+
+  {
+    options: {
+      text: 'N',
+      size: 512,
+      bgColor: '#E50914',
+      textColor: '#FFFFFF',
+      fontFamily: 'Bebas Neue, sans-serif',
+      fontWeight: 'normal',
+      radius: 4
+    },
+    title: 'Streaming Service'
+  },
+  {
+    options: {
+      text: 'M',
+      size: 512,
+      bgColor: '#0052CC',
+      textColor: '#FFFFFF',
+      fontFamily: 'Charlie Display, Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 8
+    },
+    title: 'Project Management Tool'
+  },
+  {
+    options: {
+      text: 'DEV',
+      size: 512,
+      bgColor: '#333333',
+      textColor: '#00FF00',
+      fontFamily: 'Courier, monospace',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Developer'
+  },
+  {
+    options: {
+      text: 'GIT',
+      size: 512,
+      bgColor: '#F1502F',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica, sans-serif',
+      fontWeight: 'bold',
+      radius: 8
+    },
+    title: 'Git'
+  },
+  {
+    options: {
+      text: '₿',
+      size: 512,
+      bgColor: '#F2A900',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 256
+    },
+    title: 'Bitcoin'
+  },
+  {
+    options: {
+      text: 'NFT',
+      size: 512,
+      bgColor: '#FC3C7D',
+      textColor: '#FFFFFF',
+      fontFamily: 'Impact, ImpactFallback, sans-serif',
+      fontWeight: 'normal',
+      radius: 0
+    },
+    title: 'NFT'
+  },
+  {
+    options: {
+      text: '🌙',
+      size: 512,
+      bgColor: '#1E1E1E',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'To The Moon'
+  },
+  {
+    options: {
+      text: 'GM',
+      size: 512,
+      bgColor: '#FFC300',
+      textColor: '#000000',
+      fontFamily: 'Arial Black, sans-serif',
+      fontWeight: 'normal',
+      radius: 32
+    },
+    title: 'GM (Good Morning)'
+  },
+  {
+    options: {
+      text: '⛓',
+      size: 512,
+      bgColor: '#3C3C3D',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 64
+    },
+    title: 'Blockchain'
+  },
+  {
+    options: {
+      text: '🤔',
+      size: 512,
+      bgColor: '#FFD700',
+      textColor: '#000000',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Thinking Face'
+  },
+  {
+    options: {
+      text: 'LOL',
+      size: 512,
+      bgColor: '#FF4500',
+      textColor: '#FFFFFF',
+      fontFamily: 'Impact, ImpactFallback, sans-serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'LOL'
+  },
+  {
+    options: {
+      text: '🔥',
+      size: 512,
+      bgColor: '#FF6347',
+      textColor: '#FFD700',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Fire Emoji'
+  },
+  {
+    options: {
+      text: 'U MAD?',
+      size: 512,
+      bgColor: '#E74C3C',
+      textColor: '#FFFFFF',
+      fontFamily: 'Impact, ImpactFallback, sans-serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'U MAD?'
+  },
+  {
+    options: {
+      text: '👌',
+      size: 512,
+      bgColor: '#27AE60',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'OK Hand'
+  },
+  {
+    options: {
+      text: '🍕',
+      size: 512,
+      bgColor: '#FF4500',
+      textColor: '#FFFF00',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Pizza Time'
+  },
+  {
+    options: {
+      text: '01',
+      size: 512,
+      bgColor: '#00FF00',
+      textColor: '#000000',
+      fontFamily: 'Courier, monospace',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Binary Code'
+  },
+  {
+    options: {
+      text: '❤',
+      size: 512,
+      bgColor: '#FFFFFF',
+      textColor: '#FF0000',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 64
+    },
+    title: 'Love Heart'
+  },
+  {
+    options: {
+      text: '✦',
+      size: 512,
+      bgColor: '#191970',
+      textColor: '#FFD700',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Starry Night'
+  },
+  {
+    options: {
+      text: '</>',
+      size: 64,
+      bgColor: '#282C34',
+      textColor: '#33FF33',
+      fontFamily: 'Courier',
+      fontWeight: 'bold',
+      radius: 8
+    },
+    title: 'Code Tags'
+  },
+  {
+    options: {
+      text: '404',
+      size: 64,
+      bgColor: '#cccccc',
+      textColor: '#FFFFFF',
+      fontFamily: 'Courier New',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'Not Found'
+  },
+  {
+    options: {
+      text: '{ }',
+      size: 64,
+      bgColor: '#F0DB4F',
+      textColor: '#323330',
+      fontFamily: 'Consolas',
+      fontWeight: 'normal',
+      radius: 16
+    },
+    title: 'JSON Object'
+  },
+  {
+    options: {
+      text: '∞',
+      size: 64,
+      bgColor: '#3498DB',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial',
+      fontWeight: 'normal',
+      radius: 32
+    },
+    title: 'Infinity'
+  },
+
+  {
+    options: {
+      text: 'F2',
+      size: 64,
+      bgColor: '#1abc9c',
+      textColor: '#ffffff',
+      fontFamily: 'Impact',
+      fontWeight: 'normal',
+      radius: 6
+    },
+    title: 'Teal Duo'
+  },
+  {
+    options: {
+      text: '漢',
+      size: 64,
+      bgColor: '#e74c3c',
+      textColor: '#f9e79f',
+      fontFamily: '"Noto Sans SC", sans-serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'Chinese Seal'
+  },
+  {
+    options: {
+      text: 'あ',
+      size: 64,
+      bgColor: '#1abc9c',
+      textColor: '#ffffff',
+      fontFamily: '"Noto Sans JP", sans-serif',
+      fontWeight: 'normal',
+      radius: 16
+    },
+    title: 'Japanese Mint'
+  },
+  {
+    options: {
+      text: 'ß',
+      size: 64,
+      bgColor: '#34495e',
+      textColor: '#e67e22',
+      fontFamily: '"Fira Sans", sans-serif',
+      fontWeight: 'normal',
+      radius: 20
+    },
+    title: 'German Beta'
+  },
+  {
+    options: {
+      text: 'Ж',
+      size: 64,
+      bgColor: '#c0392b',
+      textColor: '#f39c12',
+      fontFamily: '"Ubuntu", sans-serif',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Kazakh Fire'
+  },
+  {
+    options: {
+      text: 'NB',
+      size: 64,
+      bgColor: '#e74c3c',
+      textColor: '#f9e79f',
+      fontFamily: '"Noto Sans SC", sans-serif',
+      fontWeight: 'normal',
+      radius: 8
+    },
+    title: 'NB'
+  },
+  {
+    options: {
+      text: '☕',
+      size: 64,
+      bgColor: '#795548',
+      textColor: '#fff8e1',
+      fontFamily: '"Apple Color Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 32
+    },
+    title: 'Café Finder'
+  },
+  {
+    options: {
+      text: '🍽️',
+      size: 64,
+      bgColor: '#e74c3c',
+      textColor: '#ffffff',
+      fontFamily: '"Segoe UI Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 12
+    },
+    title: 'Recipe App'
+  },
+  {
+    options: {
+      text: '💰',
+      size: 64,
+      bgColor: '#27ae60',
+      textColor: '#f9e79f',
+      fontFamily: '"Noto Color Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 16
+    },
+    title: 'Budget Tracker'
+  },
+  {
+    options: {
+      text: '📷',
+      size: 64,
+      bgColor: '#34495e',
+      textColor: '#ecf0f1',
+      fontFamily: '"Segoe UI Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 8
+    },
+    title: 'Photo Editor'
+  },
+  {
+    options: {
+      text: '🎮',
+      size: 64,
+      bgColor: '#8e44ad',
+      textColor: '#ffffff',
+      fontFamily: '"Apple Color Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 24
+    },
+    title: 'Game Center'
+  },
+  {
+    options: {
+      text: '📅',
+      size: 64,
+      bgColor: '#e67e22',
+      textColor: '#ffffff',
+      fontFamily: '"Segoe UI Emoji", sans-serif',
+      fontWeight: 'normal',
+      radius: 4
+    },
+    title: 'Event Planner'
+  },
+  {
+    options: {
+      text: 'Dj',
+      size: 64,
+      bgColor: '#000000',
+      textColor: '#F0FFF4',
+      fontFamily: '"Impact", sans-serif',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'DJ Mixer'
+  },
+  {
+    options: {
+      text: '♨',
+      size: 512,
+      bgColor: '#FF4500',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica, sans-serif',
+      fontWeight: 'bold',
+      radius: 64
+    },
+    title: 'Hot Springs'
+  },
+  {
+    options: {
+      text: '☃',
+      size: 512,
+      bgColor: '#87CEEB',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 128
+    },
+    title: 'Snowman'
+  },
+  {
+    options: {
+      text: '⌨',
+      size: 512,
+      bgColor: '#2F4F4F',
+      textColor: '#00FF00',
+      fontFamily: 'Courier, monospace',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Keyboard'
+  },
+  {
+    options: {
+      text: '✏',
+      size: 512,
+      bgColor: '#FFFF00',
+      textColor: '#000000',
+      fontFamily: 'Times New Roman, serif',
+      fontWeight: 'normal',
+      radius: 128
+    },
+    title: 'Pencil'
+  },
+  {
+    options: {
+      text: '⚠',
+      size: 512,
+      bgColor: '#FFD700',
+      textColor: '#000000',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Warning'
+  },
+  {
+    options: {
+      text: '♻',
+      size: 512,
+      bgColor: '#006400',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Recycle Symbol'
+  },
+  {
+    options: {
+      text: '♘',
+      size: 512,
+      bgColor: '#FFFFFF',
+      textColor: '#000000',
+      fontFamily: 'Times New Roman, serif',
+      fontWeight: 'normal',
+      radius: 0
+    },
+    title: 'Chess Knight'
+  },
+  {
+    options: {
+      text: '☯',
+      size: 512,
+      bgColor: '#000000',
+      textColor: '#FFFFFF',
+      fontFamily: 'Helvetica, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Yin Yang'
+  },
+  {
+    options: {
+      text: '✎',
+      size: 512,
+      bgColor: '#FFFACD',
+      textColor: '#2F4F4F',
+      fontFamily: 'Times New Roman, serif',
+      fontWeight: 'normal',
+      radius: 64
+    },
+    title: 'Pencil'
+  },
+  {
+    options: {
+      text: '☕',
+      size: 512,
+      bgColor: '#8B4513',
+      textColor: '#FFDAB9',
+      fontFamily: 'Courier, monospace',
+      fontWeight: 'normal',
+      radius: 32
+    },
+    title: 'Coffee Break'
+  },
+  {
+    options: {
+      text: '⚔',
+      size: 512,
+      bgColor: '#B22222',
+      textColor: '#C0C0C0',
+      fontFamily: 'Georgia, serif',
+      fontWeight: 'bold',
+      radius: 0
+    },
+    title: 'Crossed Swords'
+  },
+  {
+    options: {
+      text: '♠',
+      size: 512,
+      bgColor: '#000000',
+      textColor: '#FFFFFF',
+      fontFamily: 'Times New Roman, serif',
+      fontWeight: 'bold',
+      radius: 16
+    },
+    title: 'Spade Suit'
+  },
+  {
+    options: {
+      text: '✈',
+      size: 512,
+      bgColor: '#87CEEB',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 32
+    },
+    title: 'Airplane'
+  },
+  {
+    options: {
+      text: '☘',
+      size: 512,
+      bgColor: '#228B22',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'bold',
+      radius: 256
+    },
+    title: 'Shamrock'
+  },
+  {
+    options: {
+      text: '☂',
+      size: 512,
+      bgColor: '#4682B4',
+      textColor: '#FFFFFF',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 128
+    },
+    title: 'Umbrella'
+  },
+  {
+    options: {
+      text: '⚡',
+      size: 512,
+      bgColor: '#FFD700',
+      textColor: '#000000',
+      fontFamily: 'Impact, ImpactFallback, sans-serif',
+      fontWeight: 'normal',
+      radius: 16
+    },
+    title: 'High Voltage'
+  },
+  {
+    options: {
+      text: '☯',
+      size: 512,
+      bgColor: '#FFFFFF',
+      textColor: '#000000',
+      fontFamily: 'Arial, sans-serif',
+      fontWeight: 'normal',
+      radius: 256
+    },
+    title: 'Yin Yang'
+  }
+];
+
+const exampleContainer = document.querySelector('.gallery-box');
+
+function createLogoGallery() {
+  const galleryInner = document.getElementById('logo-gallery-inner');
+  const logoCount = 32;
+  const fragment = document.createDocumentFragment();
+
+  for (let i = 0; i < logoCount; i++) {
+    const randomExample = examples[i];
+    const logoSvg = generateIconSVG({
+      ...randomExample.options
+    });
+    const logoItem = document.createElement('div');
+    logoItem.innerHTML = logoSvg;
+    fragment.appendChild(logoItem);
+  }
+
+  galleryInner.appendChild(fragment);
+}
+
+
+document.addEventListener('DOMContentLoaded', function() {
+
+  createColorSchemeButtons();
+  generateIcon();
+
+  createLogoGallery()
+
+  examples.forEach(example => {
+    const svg = generateIconSVG(example.options);
+    const exampleDiv = createExampleDiv(svg, example.title, example.options);
+    exampleContainer.appendChild(exampleDiv);
+
+  });
+})
+
+function applyConfig(config) {
+  document.getElementById('text').value = config.text;
+  document.getElementById('size').value = config.size === 64 ? config.size * 8 : config.size;
+  document.getElementById('bgColor').value = config.bgColor;
+  document.getElementById('textColor').value = config.textColor;
+  document.getElementById('fontFamily').value = config.fontFamily;
+  document.getElementById('fontWeight').value = config.fontWeight;
+  document.getElementById('radius').value = config.size === 64 ? config.radius * 8 : config.radius;
+
+  document.getElementById('bgColorPicker').value = config.bgColor;
+  document.getElementById('textColorPicker').value = config.textColor;
+
+  document.getElementById('bgColorPreview').style.backgroundColor = config.bgColor;
+  document.getElementById('textColorPreview').style.backgroundColor = config.textColor;
+
+  document.getElementById('verticalOffset').value = config.verticalOffset || 0;
+  document.getElementById('verticalOffsetValue').textContent = `${config.verticalOffset || 0}%`;
+
+  generateIcon();
+
+  document.querySelector('.bg-white.rounded-lg.border.border-gray-200').scrollIntoView({
+    behavior: 'smooth'
+  });
+}
+
+// FAQ
+document.addEventListener('DOMContentLoaded', (event) => {
+  const accordion = document.getElementById('faq-accordion');
+  
+  accordion.addEventListener('click', (e) => {
+    const button = e.target.closest('button');
+    if (!button) return;
+
+    e.preventDefault(); // Prevent any default button behavior
+
+    const item = button.closest('.bg-white');
+    const content = item.querySelector('div:nth-child(2)');
+    const icon = button.querySelector('svg');
+
+    // Toggle the clicked item
+    content.classList.toggle('hidden');
+    icon.classList.toggle('rotate-180');
+
+    // Close other open items
+    const allItems = accordion.querySelectorAll('.bg-white');
+    allItems.forEach((otherItem) => {
+      if (otherItem !== item) {
+        const otherContent = otherItem.querySelector('div:nth-child(2)');
+        const otherIcon = otherItem.querySelector('button svg');
+        otherContent.classList.add('hidden');
+        otherIcon.classList.remove('rotate-180');
+      }
+    });
+  });
+});
+
+    </script>
+  </body>
+</html>

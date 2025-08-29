@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charSet="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+    <meta http-equiv="Cache-Control" content="no-transform" />
+    <meta http-equiv="Cache-Control" content="no-siteapp" />
+    <meta name="referrer" content="never">
+    <meta name="renderer" content="webkit" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>随机大姐姐</title>
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="style.css" as="style">
+    <link rel="preload" href="https://cdn.jsdelivr.net/npm/hls.js@1.4.10" as="script">
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+    <link rel="stylesheet" href="style.css">
+    <!-- 延迟加载非关键JS -->
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@1.4.10" defer></script>
+    <style>
+        * {
+            border: 0;
+            margin: 0;
+            padding: 0;
+            outline: none;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+
+        #main {
+            height: calc(100vh - 60px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #player {
+            width: 100%;
+            height: auto;
+            max-height: 100%;
+        }
+
+        #buttons {
+            height: 60px;
+            padding: 10px;
+        }
+
+        #switch,
+        #next {
+            background: #FFF;
+            background: linear-gradient(to bottom, rgb(255, 255, 255),rgb(207, 209, 209));
+            color: #000000;
+            font-size: 16px;
+            font-weight: bold;
+            height: 40px;
+            padding: 0px 20px;
+            margin: 0px 5px;
+            border-radius: 20px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            border: none;
+            border-radius: 5px;
+            background-color: #4CAF50;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.1s;
+        }
+        button:active {
+            transform: scale(0.95);
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+
+        /* 公告框样式 */
+        .announcement-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.7);
+        }
+
+        .announcement-content {
+            background-color: #222;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 500px;
+            color: white;
+            position: relative;
+        }
+
+        .close-announcement {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close-announcement:hover,
+        .close-announcement:focus {
+            color: white;
+            text-decoration: none;
+        }
+
+        .announcement-title {
+            margin-top: 0;
+            color: #4CAF50;
+            border-bottom: 1px solid #444;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        /* 视频切换动画样式 */
+        #main {
+            position: relative;
+            overflow: hidden;
+        }
+
+        #player {
+            transition: transform 0.4s ease, opacity 0.4s ease;
+        }
+
+        .video-exit {
+            transform: translateY(-100%);
+            opacity: 0;
+        }
+
+        .video-enter {
+            transform: translateY(100%);
+            opacity: 0;
+        }
+    </style>
+</head>
+<body>
+<!-- 公告框 -->
+<div id="announcementModal" class="announcement-modal">
+    <div class="announcement-content">
+        <span class="close-announcement">&times;</span>
+        <h2 class="announcement-title">网站公告</h2>
+        <div id="announcementContent">
+            <p>欢迎访问本站！</p>
+            <p>请勿随意分享，低调观看，才能长久</p>
+            <p style="color: red;">服务器还有10天到期，且看且珍惜</p>
+            <p style="color: red;">我只有一台小鸡不足以支持网站流量</p>
+            <p style="color: red;">有赞助的大佬可以联系我，qq84348658@gmail.com</p>
+        </div>
+    </div>
+</div>
+
+<section id="main">
+    <video id="player" src="video.php" controls webkit-playsinline playsinline></video>
+</section>
+<section id="buttons">
+    <button id="next">播放下一个</button>
+    <button id="switch">连续: 开</button>
+    <select id="line" class="line-select">
+        <option value="1">抖阴1</option>
+        <option value="2">欧美2</option>
+        <option value="3">骑兵3</option>
+    </select>
+</section>
+<style>
+    .line-select {
+        padding: 10px 20px;
+        margin: 5px;
+        border: none;
+        border-radius: 5px;
+        background-color: #4CAF50;
+        color: white;
+        cursor: pointer;
+        font-size: 16px;
+        appearance: none;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 8px center;
+        padding-right: 30px;
+    }
+    .line-select:hover {
+        background-color: #45a049;
+    }
+</style>
+<script>
+    (function (window, document) {
+        if (top != self) {
+            window.top.location.replace(self.location.href);
+        }
+        var get = function (id) {
+            return document.getElementById(id);
+        }
+        var bind = function (element, event, callback) {
+            return element.addEventListener(event, callback);
+        }
+        var auto = true;
+        var currentLine = 1;
+        var player = get('player');
+
+        // 公告框相关功能
+        var announcementModal = get('announcementModal');
+        var closeBtn = document.querySelector('.close-announcement');
+
+        // 检查是否需要显示公告
+        function checkAnnouncement() {
+            var today = new Date().toDateString();
+            var lastShown = localStorage.getItem('lastAnnouncementShown');
+
+            if (lastShown !== today) {
+                // 如果今天没有显示过公告，则显示
+                announcementModal.style.display = 'block';
+                // 记录今天已经显示过公告
+                localStorage.setItem('lastAnnouncementShown', today);
+            }
+        }
+
+        // 关闭公告
+        if (closeBtn) {
+            bind(closeBtn, 'click', function() {
+                announcementModal.style.display = 'none';
+            });
+        }
+
+        // 点击公告框外部也可以关闭
+        bind(window, 'click', function(event) {
+            if (event.target == announcementModal) {
+                announcementModal.style.display = 'none';
+            }
+        });
+
+        // 页面加载完成后检查是否显示公告
+        bind(window, 'DOMContentLoaded', checkAnnouncement);
+
+        // 触摸事件变量
+        var touchStartY = 0;
+        var touchEndY = 0;
+        var touchThreshold = 80; // 滑动阈值，超过这个距离才触发切换
+        var isSwiping = false;
+
+        // 添加触摸事件监听 - 改为监听整个主容器
+        var mainContainer = get('main');
+
+        bind(mainContainer, 'touchstart', function(e) {
+            touchStartY = e.touches[0].clientY;
+        });
+
+        bind(mainContainer, 'touchmove', function(e) {
+            if (isSwiping) return;
+            touchEndY = e.touches[0].clientY;
+            var distance = touchStartY - touchEndY;
+
+            // 如果是上划且距离超过阈值
+            if (distance > touchThreshold) {
+                isSwiping = true;
+                player.classList.add('video-exit');
+                setTimeout(function() {
+                    randomm();
+                    setTimeout(function() {
+                        player.classList.remove('video-exit');
+                        isSwiping = false;
+                    }, 50);
+                }, 300);
+            }
+        });
+
+        bind(mainContainer, 'touchend', function() {
+            touchStartY = 0;
+            touchEndY = 0;
+        });
+
+        var randomm = function () {
+            // 添加缓存破坏参数
+            var cacheBuster = Math.random().toString(36).substring(2, 15);
+
+            if (currentLine === 2 || currentLine === 3) {
+                fetch('video.php?line=' + currentLine + '&_t=' + cacheBuster)
+                    .then(function(response) { return response.json(); })
+                    .then(function(data) {
+                        if (data.type === 'm3u8') {
+                            // 使用hls.js播放m3u8
+                            if (Hls.isSupported()) {
+                                var hls = new Hls({
+                                    maxBufferLength: 30,
+                                    maxMaxBufferLength: 60
+                                });
+                                hls.loadSource(data.url);
+                                hls.attachMedia(player);
+                                hls.on(Hls.Events.MANIFEST_PARSED, function() {
+                                    player.play();
+                                });
+                            }
+                            // 对于原生支持HLS的浏览器（如Safari）
+                            else if (player.canPlayType('application/vnd.apple.mpegurl')) {
+                                player.src = data.url;
+                                player.play();
+                            }
+                        }
+                    })
+                    .catch(function() {
+                        // 错误处理，尝试重新加载
+                        setTimeout(randomm, 1000);
+                    });
+            } else {
+                player.src = 'video.php?line=' + currentLine + '&_t=' + cacheBuster;
+                player.play();
+            }
+        }
+        bind(get('next'), 'click', randomm);
+        bind(player, 'error', function () {
+            setTimeout(randomm, 1000); // 添加延迟重试
+        });
+        bind(get('switch'), 'click', function () {
+            auto = !auto;
+            this.innerText = '连续: ' + (auto ? '开' : '关');
+        });
+        bind(get('line'), 'change', function () {
+            currentLine = parseInt(this.value);
+            randomm();
+        });
+        bind(player, 'ended', function () {
+            if (auto) randomm();
+        });
+    })(window, document);
+</script>
+</body>
+</html>

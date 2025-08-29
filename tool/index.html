@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>WTool - 在线工具</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/img/favicon.ico" mce_href="/img/favicon.ico" type="image/x-icon"/>
+  <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+  <link href="assets/css/tool.css" rel="stylesheet" type="text/css" />
+</head>
+<body>
+<div class="navbar navbar-default navbar-static-top navbar-fixed-top">
+    <div class="jz container">
+        <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar"
+                    aria-expanded="false" aria-controls="navbar"><span class="sr-only">WTool</span> <span
+                    class="icon-bar"></span><span class="icon-bar"></span><span class="icon-bar"></span></button>
+            <a class="navbar-brand" href="./index.html" title="WTool">WTool</a>
+        </div>
+        <div id="navbar" class="navbar-collapse collapse" role="navigation">
+            <ul class="nav navbar-nav" id="top_menu">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">JSON工具<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu ul-list">
+                        <li><a href="page/json.html">Json格式化</a></li>
+                        <li><a href="page/jsonudview.html"> Json格式化(上下)</a></li>
+                        <li><a href="page/jsonlrview.html">Json格式化(左右)</a></li>
+                        <li><a href="page/jsonzip.html">Json在线压缩转义</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/json2cs.html">Json生成C#实体类</a></li>
+                        <li><a href="page/json2java.html"> Json生成Java实体类</a></li>
+                        <li><a href="page/json2go.html">Json生成Go结构体</a></li>
+                        <li><a href="page/sql2java.html">SQL转Java实体类</a></li>
+                        <li><a href="page/json2xml.html">XML和Json在线互转</a></li>
+                        <li><a href="page/excel2json.html">Excel/CSV转Json格式</a></li>
+                        <li><a href="page/json2excel.html">Json转Excel/CSV格式</a></li>
+                        <li><a href="page/json2get.html">JSON和GET参数互转</a></li>
+                        <li><a href="page/json2yaml.html">JSON转YAML</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">格式化转换<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu ul-list">
+                        <li><a href="page/formathtml.html">HTML格式化/压缩</a></li>
+                        <li><a href="page/formatcss.html" style="color:#f30"> CSS格式化/压缩</a></li>
+                        <li><a href="page/formatjs.html">JS格式化/压缩</a></li>
+                        <li><a href="page/endecodejs.html">JS加密/解密</a></li>
+                        <li><a href="page/confundirjs.html"> JS代码混合加密</a></li>
+                        <li><a href="page/formatsql.html">SQL压缩/格式化</a></li>
+                        <li><a href="page/formatphp.html">PHP代码格式化工具</a></li>
+                        <li><a href="page/formatxml.html">XML压缩/格式化 </a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/htmloutjs.html" style="color:#f30">Html/JS互转</a></li>
+                        <li><a href="page/htmlescape.html"> Html转义工具</a></li>
+                        <li><a href="page/html2cj.html"> Html转C#/JSP</a></li>
+                        <li><a href="page/html2php.html">Html转PHP代码</a></li>
+                        <li><a href="page/html2all.html">Html转ASP/Perl</a></li>
+                        <li><a href="page/htmlfromcsv.html">Excel转HTML表格</a></li>
+                        <li><a href="page/htmltable.html">Html表格生成器</a></li>
+                        <li><a href="page/htmlmarkdown.html">HTML/MarkDown互转</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/regex.html">正则表达式测试工具</a></li>
+                        <li><a href="page/regexcode.html">正则生成代码</a></li>
+                        <li><a href="page/formatfilter.html">Html过滤工具</a></li>
+                        <li><a href="page/runjs.html">运行Js/html/css</a></li>
+                        <li><a href="page/xpath.html">Xpath工具</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">加解密编码<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu ul-list">
+                        <li><a href="page/md5.html">MD5加密工具</a></li>
+                        <li><a href="page/yflc.html">与佛论禅</a></li>
+                        <li><a href="page/urlcode.html">URL网址16进制加密</a></li>
+                        <li><a href="page/urlthunder.html">迅雷旋风URL加解密</a></li>
+                        <li><a href="page/base64.html"> Base64加密/解密</a></li>
+                        <li><a href="page/escape.html">Escape加密/解密</a></li>
+                        <li><a href="page/deencrypt.html">对称加密/解密</a></li>
+                        <li><a href="page/shaencrypt.html">SHA/SHA256加密</a></li>
+                        <li><a href="page/allencrypt.html">散列/哈希加密大全</a></li>
+                        <li><a href="page/morse.html">摩尔斯电码加解密</a></li>
+                        <li><a href="page/password.html">密码生成器</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/uuid.html">UUID在线生成</a></li>
+                        <li><a href="page/guid.html">GUID在线生成</a></li>
+                        <li><a href="page/barcode.html">条形码生成器</a></li>
+                        <li><a href="page/ip2long.html">IP/数字地址转换</a></li>
+                        <li><a href="page/img2base64.html" style="color:#f00"> 图片转Base64</a></li>
+                        <li><a href="page/utf8.html">UTF-8转GBK</a></li>
+                        <li><a href="page/unicode.html">Unicode/ASCII转换</a></li>
+                        <li><a href="page/ascii.html">ASCII编码/解码</a></li>
+                        <li><a href="page/urlencode.html">URL编码/解码</a></li>
+                        <li><a href="page/keyboardcode.html">KeyCode键盘按键码</a></li>
+                        <li><a href="page/androidkeycode.html">Android按键码</a></li>
+                        <li><a href="page/keyboardtest.html">键盘测试工具</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">文本数字<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu ul-list">
+                        <li><a href="page/editor.html">Html在线编辑器</a></li>
+                        <li><a href="page/autoformat.html" style="color:#f30"> 文章自动排版</a></li>
+                        <li><a href="page/caiji.html"> 文章内容采集</a></li>
+                        <li><a href="page/jianfan.html">简繁字体转换</a></li>
+                        <li><a href="page/pinyin.html">汉字转为拼音</a></li>
+                        <li><a href="page/huoxingwen.html">火星文转换器</a></li>
+                        <li><a href="page/txtreplace.html">文本内容替换</a></li>
+                        <li><a href="page/textdiff.html"> 文本内容对比</a></li>
+                        <li><a href="page/txtcount.html">在线统计字数工具</a></li>
+                        <li><a href="page/quchong.html">内容去重工具</a></li>
+                        <li><a href="page/wenzitexiao.html">文字特效工具</a></li>
+                        <li><a href="page/zipstringtext.html">字符串文本压缩工具</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/camelcase.html" style="color:blue">驼峰与下划线互转</a></li>
+                        <li><a href="page/quanbaojiao.html">全角半角转换</a></li>
+                        <li><a href="page/enlower.html">英文字母大小写转换</a></li>
+                        <li><a href="page/rmbdaxie.html">人民币大写转换工具</a></li>
+                        <li><a href="page/random.html">随机数生成器</a></li>
+                        <li><a href="page/unixtime.html"> Unix时间戳在线转换</a></li>
+                        <li><a href="page/hexconvert.html">常用进制转换工具</a></li>
+                        <li><a href="page/hexrgb.html"> RGB颜色在线转换</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">网络<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="page/ip.html">IP地址归属地查询</a></li>
+                        <li><a href="page/websocket.html">Websocket测试</a></li>
+                        <li><a href="page/browserinfo.html">获取浏览器信息</a></li>
+                        <li><a href="page/dns.html">公共DNS</a></li>
+                        <li><a href="page/alldns.html">各地区公共DNS</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">站长<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu ul-list">
+                        <li><a href="page/checkweixin.html" style="color:red">微信域名检测工具</a></li>
+                        <li><a href="page/htaccess2nginx.html">htaccess转nginx</a></li>
+                        <li><a href="page/shortcut.html">生成桌面快捷方式</a></li>
+                        <li><a href="page/px2rem.html">rem与px转换工具</a></li>
+                        <li><a href="page/favicon.html">在线制作ico图标</a></li>
+                        <li><a href="page/createmeta.html">生成网页Meta标签</a></li>
+                        <li><a href="page/refresh.html">在线定时刷新网址</a></li>
+                        <li><a href="page/tiaoseban.html">在线调色板</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/gzip.html">网站Gzip压缩检测</a></li>
+                        <li><a href="page/checkurl.html">网站死链检测</a></li>
+                        <li><a href="page/whois.html"> Whois查询工具</a></li>
+                        <li><a href="page/chaicp.html">ICP网站备案查询</a></li>
+                        <li><a href="page/chameta.html">Meta标签优化分析</a></li>
+                        <li><a href="page/checkkeyword.html">网页关键词密度检测</a></li>
+                        <li><a href="page/webstatus.html">HTTP状态码查询</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">计算<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="page/nianlvli.html">利率计算器在线</a></li>
+                        <li><a href="page/subnetmask.html">子网掩码计算器</a></li>
+                        <li><a href="page/calculator.html">在线科学计算器</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">其他<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="page/tuya.html">在线涂鸦画板</a></li>
+                        <li><a href="page/matting.html">在线图片处理</a></li>
+                        <li><a href="page/stampdraw.html">在线印章工具</a></li>
+                        <!-- <li><a href="page/xjj.html">随机小姐姐视频</a></li> -->
+                        <li><a href="page/tbgj.html">图标制作工具</a></li>
+                        <li><a href="page/kebi.html">课表制作工具</a></li>
+                        <li><a href="page/calendar.html">在线日历</a></li>
+                        <li><a href="page/shizhong.html">在线时钟</a></li>
+                        <li><a href="page/worldtime.html">世界各地时间</a></li>
+                        <li><a href="page/capital.html">世界各国首都查询</a></li>
+                        <li><a href="page/currency.html">世界各地货币查询</a></li>
+                        <li><a href="page/areacode.html">世界各国区号时差查询</a></li>
+                        <li><a href="page/jieri.html">世界节日查询</a></li>
+                        <li><a href="page/shaoshuminzu.html">全国少数民族分布查询</a></li>
+                        <li><a href="page/chaodai.html">中国历史朝代时间查询表</a></li>
+                        <li><a href="page/tesufuhao.html">特殊符号大全</a></li>
+                        <li><a href="page/lishishangdejintian.html">历史上的今天</a></li>
+                    </ul>
+                <li class="dropdown">
+                <li class="dropdown"><a href="/" class="dropdown-toggle" data-toggle="dropdown"
+                                        role="button" aria-haspopup="true" aria-expanded="false">对照列表<span
+                        class="caret"></span></a>
+                    <ul class="dropdown-menu">
+                        <li><a href="page/useragent.html">常用User-Agent</a></li>
+                        <li><a href="page/contenttype.html">Content-Type对照表</a></li>
+                        <li><a href="page/requestmethod.html">Request请求大全</a></li>
+                        <li><a href="page/httpheader.html">HTTP请求头大全</a></li>
+                        <li><a href="page/pagecode.html"> HTTP状态码</a></li>
+                        <li role="separator" class="divider"></li>
+                        <li><a href="page/asciicode.html">ASCII对照表</a></li>
+                        <li><a href="page/htmlescapechar.html">HTML特殊字符转义</a></li>
+                        <li><a href="page/ports.html">常见端口大全</a></li>
+                        <li><a href="page/bootstrapicon.html">Bootstrap字体图标</a></li>
+                        <li><a href="page/androidmanifest.html"> Android Manifest权限大全</a></li>
+                        <li><a href="page/linuxcmd.html">Linux常用命令大全</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>
+<div class="container" id="container">
+         <div class="row" style="padding-top: 30px;">
+            <div class="col-md-12"><span>您的足迹：</span><span id="visit_history"></span></div>
+            <div class="col-md-12" style="margin-top:10px"><!-- 广告区1 --></div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 footer-nav">
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>JSON工具</span></h3>
+                    <li><span></span><a href="page/json.html">Json格式化</a></li>
+                    <li><span></span><a href="page/jsonudview.html"> Json格式化(上下)</a></li>
+                    <li><span></span><a href="page/jsonlrview.html">Json格式化(左右)</a></li>
+                    <li><span></span><a href="page/jsonzip.html">Json在线压缩转义</a></li>
+                    <li><span></span><a href="page/json2cs.html">Json生成C#实体类</a></li>
+                    <li><span></span><a href="page/json2java.html"> Json生成Java实体类</a></li>
+                    <li><span></span><a href="page/json2go.html">Json生成Go结构体</a></li>
+                    <li><span></span><a href="page/sql2java.html">SQL转Java实体类</a></li>
+                    <li><span></span><a href="page/json2xml.html">XML和Json在线互转</a></li>
+                    <li><span></span><a href="page/excel2json.html">Excel/CSV转Json格式</a></li>
+                    <li><span></span><a href="page/json2excel.html">Json转Excel/CSV格式</a></li>
+                    <li><span></span><a href="page/json2get.html">JSON和GET参数互转</a></li>
+                    <li><span></span><a href="page/json2yaml.html">JSON转YAML</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>格式化转换</span></h3>
+                    <li><span></span><a href="page/formathtml.html">HTML格式化/压缩</a></li>
+                    <li><span></span><a href="page/formatcss.html" style="color:#f30"> CSS格式化/压缩</a></li>
+                    <li><span></span><a href="page/formatjs.html">JS格式化/压缩</a></li>
+                    <li><span></span><a href="page/endecodejs.html">JS加密/解密</a></li>
+                    <li><span></span><a href="page/confundirjs.html"> JS代码混合加密</a></li>
+                    <li><span></span><a href="page/formatsql.html">SQL压缩/格式化</a></li>
+                    <li><span></span><a href="page/formatphp.html">PHP代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatxml.html">XML压缩/格式化 </a></li>
+                    <li><span></span><a href="page/formatcs.html">C#代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatjava.html">JAVA代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatcsql.html">SQL代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatpy.html">Python代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatruby.html">Ruby代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatc.html">C语言代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatcpp.html">C++代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatperl.html">Perl代码格式化工具</a></li>
+                    <li><span></span><a href="page/formatvbs.html">VBScript格式化工具</a></li>
+                    <li><span></span><a href="page/html2js.html"> Html转JS</a></li>
+                    <li><span></span><a href="page/htmloutjs.html" style="color:#f30">Html/JS互转</a></li>
+                    <li><span></span><a href="page/htmlescape.html"> Html转义工具</a></li>
+                    <li><span></span><a href="page/html2cj.html"> Html转C#/JSP</a></li>
+                    <li><span></span><a href="page/html2php.html">Html转PHP代码</a></li>
+                    <li><span></span><a href="page/html2all.html">Html转ASP/Perl</a></li>
+                    <li><span></span><a href="page/htmlfromcsv.html">Excel转HTML表格</a></li>
+                    <li><span></span><a href="page/htmltable.html">Html表格生成器</a></li>
+                    <li><span></span><a href="page/html2ubb.html">HTML/UBB互转</a></li>
+                    <li><span></span><a href="page/htmlmarkdown.html">HTML/MarkDown互转</a></li>
+                    <li><span></span><a href="page/regex.html">正则表达式测试工具</a></li>
+                    <li><span></span><a href="page/regexcode.html">正则生成代码</a></li>
+                    <li><span></span><a href="page/formatfilter.html">Html过滤工具</a></li>
+                    <li><span></span><a href="page/regexdso.html">常用正则表达式</a></li>
+                    <li><span></span><a href="page/regexsucha.html">正则表达式语法速查</a></li>
+                    <li><span></span><a href="page/runjs.html">运行Js/html/css</a></li>
+                    <li><span></span><a href="page/xpath.html">Xpath工具</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>加解密编码</span></h3>
+                    <li><span></span><a href="page/md5.html">MD5加密工具</a></li>
+                    <li><span></span><a href="page/yflc.html">与佛论禅</a></li>
+                    <li><span></span><a href="page/urlcode.html">URL网址16进制加密</a></li>
+                    <li><span></span><a href="page/urlthunder.html">迅雷旋风URL加解密</a></li>
+                    <li><span></span><a href="page/base64.html"> Base64加密/解密</a></li>
+                    <li><span></span><a href="page/escape.html">Escape加密/解密</a></li>
+                    <li><span></span><a href="page/deencrypt.html">对称加密/解密</a></li>
+                    <li><span></span><a href="page/aesencrypt.html">AES加密/解密</a></li>
+                    <li><span></span><a href="page/desencrypt.html">DES加密/解密</a></li>
+                    <li><span></span><a href="page/rc4encrypt.html">RC4加密/解密</a></li>
+                    <li><span></span><a href="page/rabbitencrypt.html">Rabbit加密/解密</a></li>
+                    <li><span></span><a href="page/tripledes.html">TripleDES加密/解密</a></li>
+                    <li><span></span><a href="page/shaencrypt.html">SHA/SHA256加密</a></li>
+                    <li><span></span><a href="page/allencrypt.html">散列/哈希加密大全</a></li>
+                    <li><span></span><a href="page/morse.html">摩尔斯电码加解密</a></li>
+                    <li><span></span><a href="page/password.html">密码生成器</a></li>
+                    <li><span></span><a href="page/uuid.html">UUID在线生成</a></li>
+                    <li><span></span><a href="page/guid.html">GUID在线生成</a></li>
+                    <li><span></span><a href="page/htpasswd.html">htpasswd生成</a></li>
+                    <li><span></span><a href="page/barcode.html">条形码生成器</a></li>
+                    <li><span></span><a href="page/ip2long.html">IP/数字地址转换</a></li>
+                    <li><span></span><a href="page/img2base64.html" style="color:#f00"> 图片转Base64</a></li>
+                    <li><span></span><a href="page/utf8.html">UTF-8转GBK</a></li>
+                    <li><span></span><a href="page/unicode.html">Unicode/ASCII转换</a></li>
+                    <li><span></span><a href="page/ascii.html">ASCII编码/解码</a></li>
+                    <li><span></span><a href="page/urlencode.html">URL编码/解码</a></li>
+                    <li><span></span><a href="page/navtiveunicode.html">Native/Unicode编码转换</a></li>
+                    <li><span></span><a href="page/keyboardcode.html">KeyCode键盘按键码</a></li>
+                    <li><span></span><a href="page/androidkeycode.html">Android按键码</a></li>
+                    <li><span></span><a href="page/keyboardtest.html">键盘测试工具</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>文本数字</span></h3>
+                    <li><span></span><a href="page/editor.html">Html在线编辑器</a></li>
+                    <li><span></span><a href="page/autoformat.html" style="color:#f30"> 文章自动排版</a></li>
+                    <li><span></span><a href="page/caiji.html"> 文章内容采集</a></li>
+                    <li><span></span><a href="page/jianfan.html">简繁字体转换</a></li>
+                    <li><span></span><a href="page/pinyin.html">汉字转为拼音</a></li>
+                    <li><span></span><a href="page/huoxingwen.html">火星文转换器</a></li>
+                    <li><span></span><a href="page/txtreplace.html">文本内容替换</a></li>
+                    <li><span></span><a href="page/textdiff.html"> 文本内容对比</a></li>
+                    <li><span></span><a href="page/txtcount.html">在线统计字数工具</a></li>
+                    <li><span></span><a href="page/shupai.html">文字竖排工具</a></li>
+                    <li><span></span><a href="page/textflip.html">文字翻转工具</a></li>
+                    <li><span></span><a href="page/quchong.html">内容去重工具</a></li>
+                    <li><span></span><a href="page/wenzitexiao.html">文字特效工具</a></li>
+                    <li><span></span><a href="page/zipstringtext.html">字符串文本压缩工具</a></li>
+                    <li><span></span><a href="page/camelcase.html" style="color:blue">驼峰与下划线互转</a></li>
+                    <li><span></span><a href="page/quanbaojiao.html">全角半角转换</a></li>
+                    <li><span></span><a href="page/enlower.html">英文字母大小写转换</a></li>
+                    <li><span></span><a href="page/rmbdaxie.html">人民币大写转换工具</a></li>
+                    <li><span></span><a href="page/random.html">随机数生成器</a></li>
+                    <li><span></span><a href="page/unixtime.html"> Unix时间戳在线转换</a></li>
+                    <li><span></span><a href="page/hexconvert.html">常用进制转换工具</a></li>
+                    <li><span></span><a href="page/hexrgb.html"> RGB颜色在线转换</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>网络</span></h3>
+                    <li><span></span><a href="page/ip.html">IP地址归属地查询</a></li>
+                    <li><span></span><a href="page/websocket.html">Websocket测试</a></li>
+                    <li><span></span><a href="page/browserinfo.html">获取浏览器信息</a></li>
+                    <li><span></span><a href="page/dns.html">公共DNS</a></li>
+                    <li><span></span><a href="page/alldns.html">各地区公共DNS</a></li>
+                    <li><span></span><a href="page/dnsdx.html">各地电信DNS</a></li>
+                    <li><span></span><a href="page/dnslt.html">各地联通DNS</a></li>
+                    <li><span></span><a href="page/dnsyd.html">各地移动DNS</a></li>
+                    <li><span></span><a href="page/dnstt.html">各地铁通DNS</a></li>
+                    <li><span></span><a href="page/dnsedu.html">教育网DNS</a></li>
+                    <li><span></span><a href="page/dnsusa.html">美国DNS</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>站长</span></h3>
+                    <li><span></span><a href="page/checkweixin.html" style="color:red">微信域名检测工具</a></li>
+                    <li><span></span><a href="page/htaccess2nginx.html">htaccess转nginx</a></li>
+                    <li><span></span><a href="page/shortcut.html">生成桌面快捷方式</a></li>
+                    <li><span></span><a href="page/px2rem.html">rem与px转换工具</a></li>
+                    <li><span></span><a href="page/favicon.html">在线制作ico图标</a></li>
+                    <li><span></span><a href="page/createmeta.html">生成网页Meta标签</a></li>
+                    <li><span></span><a href="page/refresh.html">在线定时刷新网址</a></li>
+                    <li><span></span><a href="page/tiaoseban.html">在线调色板</a></li>
+                    <li><span></span><a href="page/gzip.html">网站Gzip压缩检测</a></li>
+                    <li><span></span><a href="page/checkurl.html">网站死链检测</a></li>
+                    <li><span></span><a href="page/whois.html"> Whois查询工具</a></li>
+                    <li><span></span><a href="page/chaicp.html">ICP网站备案查询</a></li>
+                    <li><span></span><a href="page/chameta.html">Meta标签优化分析</a></li>
+                    <li><span></span><a href="page/checkkeyword.html">网页关键词密度检测</a></li>
+                    <li><span></span><a href="page/webstatus.html">HTTP状态码查询</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>计算</span></h3>
+                    <li><span></span><a href="page/nianlvli.html">利率计算器在线</a></li>
+                    <li><span></span><a href="page/subnetmask.html">子网掩码计算器</a></li>
+                    <li><span></span><a href="page/calculator.html">在线科学计算器</a></li>
+                    <li><span></span><a href="page/calcarea.html">面积换算器</a></li>
+                    <li><span></span><a href="page/calcheat.html">热量换算器</a></li>
+                    <li><span></span><a href="page/calcvolume.html">体积换算器</a></li>
+                    <li><span></span><a href="page/calcpressure.html">压力换算器</a></li>
+                    <li><span></span><a href="page/calcpower.html">功率换算器</a></li>
+                    <li><span></span><a href="page/calclength.html">长度换算器</a></li>
+                    <li><span></span><a href="page/calctemperature.html">温度换算器</a></li>
+                    <li><span></span><a href="page/calctime.html">时间换算器</a></li>
+                    <li><span></span><a href="page/calcspeed.html">速度换算器</a></li>
+                    <li><span></span><a href="page/calcangle.html">角度换算器</a></li>
+                    <li><span></span><a href="page/calcdata.html">数据大小换算器</a></li>
+                    <li><span></span><a href="page/calcthickness.html">密度换算器</a></li>
+                    <li><span></span><a href="page/calcforce.html">力换算器</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>其他</span></h3>
+                    <li><span></span><a href="page/tuya.html">在线涂鸦画板</a></li>
+                    <li><span></span><a href="page/matting.html">在线图片处理</a></li>
+                    <li><span></span><a href="page/shizhong.html">在线时钟</a></li>
+                    <li><span></span><a href="page/worldtime.html">世界各地时间</a></li>
+                    <li><span></span><a href="page/capital.html">世界各国首都查询</a></li>
+                    <li><span></span><a href="page/currency.html">世界各地货币查询</a></li>
+                    <li><span></span><a href="page/areacode.html">世界各国区号时差查询</a></li>
+                    <li><span></span><a href="page/jieri.html">世界节日查询</a></li>
+                    <li><span></span><a href="page/shaoshuminzu.html">全国少数民族分布查询</a></li>
+                    <li><span></span><a href="page/chaodai.html">中国历史朝代时间查询表</a></li>
+                    <li><span></span><a href="page/tesufuhao.html">特殊符号大全</a></li>
+                    <li><span></span><a href="page/lishishangdejintian.html">历史上的今天</a></li>
+                </ul>
+                <ul class="list-inline list-inline-bg">
+                    <h3><span>对照列表</span></h3>
+                    <li><span></span><a href="page/useragent.html">常用User-Agent</a></li>
+                    <li><span></span><a href="page/contenttype.html">Content-Type对照表</a></li>
+                    <li><span></span><a href="page/requestmethod.html">Request请求大全</a></li>
+                    <li><span></span><a href="page/httpheader.html">HTTP请求头大全</a></li>
+                    <li><span></span><a href="page/pagecode.html"> HTTP状态码</a></li>
+                    <li><span></span><a href="page/asciicode.html">ASCII对照表</a></li>
+                    <li><span></span><a href="page/htmlescapechar.html">HTML特殊字符转义</a></li>
+                    <li><span></span><a href="page/ports.html">常见端口大全</a></li>
+                    <li><span></span><a href="page/bootstrapicon.html">Bootstrap字体图标</a></li>
+                    <li><span></span><a href="page/androidmanifest.html"> Android Manifest权限大全</a></li>
+                    <li><span></span><a href="page/linuxcmd.html">Linux常用命令大全</a></li>
+                </ul>
+            </div>
+        </div>
+</div>
+<div class="copyright" id="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-12"><span> © 2025 </span>         
+            </div>
+    </div>
+</div>
+<!--<a class="gotop" href="#top" title="返回顶部" style="display: none;"><span class="arrow"></span><span-->
+<!--        class="arrow lit"></span></a>-->
+<script src="assets/js/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="assets/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="assets/js/tool.js" type="text/javascript"></script>
+<script>
+// 获取所有包含page/路径的链接，包括navbar、visit_history和其他列表中的链接
+const navLinks = document.querySelectorAll('#navbar a[href^="page/"], #visit_history a[href^="page/"], .list-inline a[href^="page/"]');
+
+navLinks.forEach(link => {
+  link.addEventListener('click', function(e) {
+    e.preventDefault();
+    loadPageWithIframe(this.href);
+  });
+});
+
+function loadPageWithIframe(url) {
+  const container = document.getElementById('container');
+  container.innerHTML = '';
+  
+  const iframe = document.createElement('iframe');
+  iframe.src = url;
+  iframe.style.width = '100%';
+  iframe.style.height = '100vh';
+  iframe.style.border = 'none';
+  iframe.style.overflow = 'hidden';
+  
+  container.appendChild(iframe);
+}
+</script>
+</body>
+</html>

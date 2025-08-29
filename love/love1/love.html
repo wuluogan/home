@@ -1,0 +1,299 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+<link rel="stylesheet" href="css/index.css">
+<link rel="stylesheet" href="css/animate.min.css">
+<script src='js/jquery.js'></script>
+<script src='js/jquery.mousewheel.min.js'></script>
+<script src='js/index.js'></script>
+<script src="js/animate.js"></script>
+<title>最美不过青云-敏.</title>
+<style>
+
+
+	.icon-pause,
+
+
+.icon-play { display: inline-block; width: 32px; height: 32px; background: url(images/icon-music.png); background-size: 32px 32px; }
+
+
+.rotate {
+
+
+    -webkit-animation: rotating 1.2s linear infinite;
+
+
+    -moz-animation: rotating 1.2s linear infinite;
+
+
+    -o-animation: rotating 1.2s linear infinite;
+
+
+    animation: rotating 1.2s linear infinite;
+
+
+}
+
+
+
+
+
+ 
+
+
+@-webkit-keyframes rotating {
+
+
+    from {
+
+
+        -webkit-transform: rotate(0deg)
+
+
+    }
+
+
+
+
+
+    to {
+
+
+        -webkit-transform: rotate(360deg)
+
+
+    }
+
+
+}
+
+
+
+
+
+@keyframes rotating {
+
+
+    from {
+
+
+        transform: rotate(0deg)
+
+
+    }
+
+
+
+
+
+    to {
+
+
+        transform: rotate(360deg)
+
+
+    }
+
+
+}
+
+
+
+
+
+@-moz-keyframes rotating {
+
+
+    from {
+
+
+        -moz-transform: rotate(0deg)
+
+
+    }
+
+
+
+
+
+    to {
+
+
+        -moz-transform: rotate(360deg)
+
+
+    }
+
+
+}
+
+
+</style>
+<script>
+
+
+      //参数设定
+
+
+      var time=500;//切换时间
+
+
+          ntime=500//nav变换时间；
+
+
+	</script>
+<script language="javascript">
+
+
+var ss;
+
+
+window.onload=function()
+
+
+{
+
+
+var h=document.documentElement.clientHeight;//适应所有尺寸浏览器
+
+
+document.getElementById('page1').style.height=h+"px";
+
+
+document.getElementById('page2').style.height=h+"px";
+
+
+document.getElementById('page3').style.height=h+"px";
+
+
+document.getElementById('page5').style.height=h+"px";
+
+
+}
+
+
+</script>
+</head>
+<body>
+<div style="position:absolute; top:50px; right:50px;">
+<audio id="main_audio" autoplay="autoplay" preload="auto" loop>
+<source src="http://www.zaiyiqiba.com/mp3/mp3.php?id=http://music.163.com/outchain/player?type=2&amp;id=132975&amp;auto=1&amp;height=66" type="audio/mpeg" />
+<embed id="main_audio_ie8" hidden="true" autostart="true" height="0" width=0 loop="true" src="http://www.zaiyiqiba.com/mp3/mp3.php?id=http://music.163.com/outchain/player?type=2&amp;id=132975&amp;auto=1&amp;height=66" autoplay="autoplay"/>
+</audio>
+<a class="c-white fs-12 icon-play rotate" id="btn-play" href="javascript:void(0);"></a>
+</div>
+<script type="text/javascript">
+
+
+    //获取picid函数
+
+
+    $(function(){
+
+
+        $("area").click(function(){
+
+
+           var  picId=$(this).attr("data-id");
+
+
+           var picSrc="images/img_big/"+picId+".jpg"
+
+
+            $(".modal-content>.pic-box>img").attr("src",picSrc);
+
+
+        })
+
+
+        var isPlaying = function(audio) {return !audio.paused;}
+
+
+        var a = document.getElementById('main_audio');
+
+
+        if(!(a.play instanceof Function)){
+
+
+            a = document.getElementById('main_audio_ie8');
+
+
+            isPlaying = function(audio) {return audio.playState==2;}
+
+
+        }
+
+
+        $('#btn-play').on('click', function() {
+
+
+            if($(this).hasClass('rotate')) {
+
+
+                a.pause();
+
+
+                $(this).removeClass('rotate');
+
+
+            } else {
+
+
+                a.play();
+
+
+                $(this).addClass('rotate');
+
+
+            }
+
+
+        });
+
+
+
+
+
+    })
+
+
+    </script>
+<ul id="content">
+<li class="main1">
+<div class="page1" id="page1">
+<div class="page1_bg" title="辞情制作"></div>
+<div class="page1_t1" title="辞情制作"></div>
+<div class="page1_t2" title="辞情制作"></div>
+<div class="page1_t3" title="辞情制作"></div>
+<div class="page1_cxx" title="辞情制作"></div>
+<div class="page1_cc" title="辞情制作"></div>
+<div class="page1_heart" title="辞情制作"></div>
+<div class="page1_left" title="辞情制作"></div>
+<div class="page1_right"></div>
+<div class="page1_yun1"></div>
+<div class="page1_yun2"></div>
+<div class="page1_yun3"></div>
+</div>
+</li>
+<li class="main2">
+<div class="page2" id="page2">
+<div class="page2_bg"></div>
+</div>
+</li>
+<li class="main3">
+<div class="page3" id="page3">
+<div class="page3_bg"></div>
+</div>
+</li>
+<li class="main5">
+<div class="page5" id="page5">
+<div class="page5_bg">
+<div id="elapseClock"><iframe src="time.htm" width="600px" height="50" frameborder="0"></iframe></div>
+<div class="line"></div>
+</div>
+</div>
+</li>
+</ul>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手持弹幕LED工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4d80f0',
+                        secondary: '#d1d1d1',
+                        dark: '#666666',
+                    },
+                }
+            }
+        }
+    </script>
+
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow-animated {
+                animation: animateBounce 0.5s linear infinite;
+            }
+            .slide-animation {
+                animation: slide linear infinite;
+            }
+            .rotate-90 {
+                transform: rotate(90deg);
+            }
+        }
+
+        @keyframes slide {
+            from { transform: translateX(100%); }
+            to { transform: translateX(-100%); }
+        }
+
+        @keyframes animateBounce {
+            0%, 100% {
+                text-shadow: -2px -2px 0 #0ff, 2px 2px 0 #f00;
+            }
+            25% {
+                text-shadow: 2px 2px 0 #0ff, -2px -2px 0 #f00;
+            }
+            50% {
+                text-shadow: 2px -2px 0 #0ff, 2px -2px 0 #f00;
+            }
+            75% {
+                text-shadow: -2px 2px 0 #0ff, -2px 2px 0 #f00;
+            }
+        }
+    </style>
+</head>
+<body class="m-0 p-0 overflow-hidden h-screen">
+    <div class="led-wrapper h-screen flex flex-col">
+        <!-- 主显示区域 -->
+        <div
+            class="text-area flex-1 w-full flex items-center justify-center relative"
+            style="background-color: #000000; color: #ffffff;"
+            onclick="toggleShowActionSheet()"
+        >
+            <div class="text-roll-wrapper whitespace-nowrap" id="textRollWrapper">
+                <div class="text-roll slide-animation" id="textRoll">
+                    <div id="textContent" class="text-bounce text-shadow-animated">欢迎❤️欢迎</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 底部设置面板 -->
+        <div
+            class="setting fixed bottom-0 left-0 right-0 bg-dark/40 z-50 transform translate-y-full transition-transform duration-200"
+            id="actionSheet"
+            style="height: 580rpx;"
+        >
+            <div class="action-content h-full flex flex-col justify-between p-4">
+                <!-- 标签页导航 -->
+                <div class="tabs border-b border-gray-600">
+                    <div class="flex flex-row">
+                        <div class="tab-item py-3 px-6 text-white font-medium border-b-2 border-primary" data-tab="0" onclick="switchTab(0)">常用语</div>
+                        <div class="tab-item py-3 px-6 text-white/70 font-medium" data-tab="1" onclick="switchTab(1)">字体/滚动</div>
+                        <div class="tab-item py-3 px-6 text-white/70 font-medium" data-tab="2" onclick="switchTab(2)">颜色</div>
+                    </div>
+                </div>
+
+                <!-- 标签页内容 -->
+                <div class="tab-contents flex-1 overflow-y-auto">
+                    <!-- 常用语标签页 -->
+                    <div class="tab-content" id="tab0">
+                        <div class="content p-4">
+                            <div class="tags flex flex-wrap gap-2">
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('欢迎❤️欢迎')">欢迎❤️欢迎</div>
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('🌹谢谢你🌹')">🌹谢谢你🌹</div>
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('可以认识一下么？')">可以认识一下么？</div>
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('你好，盆友')">你好，盆友</div>
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('再见❤️我会想你的')">再见❤️我会想你的</div>
+                                <div class="tag px-4 py-1 bg-black text-white rounded text-sm" onclick="setText('分享给朋友，显示相同弹幕')">分享给朋友，显示相同弹幕</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 字体/滚动标签页 -->
+                    <div class="tab-content hidden" id="tab1">
+                        <div class="content p-4">
+                            <div class="mb-6">
+                                <div class="text-white mb-2">字体大小</div>
+                                <input
+                                    type="range"
+                                    min="50"
+                                    max="600"
+                                    value="250"
+                                    class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                                    id="sizeSlider"
+                                    oninput="sliderSizeChange(this.value)"
+                                >
+                                <div class="text-white text-sm mt-1" id="sizeValue">250</div>
+                            </div>
+
+                            <div class="mb-6">
+                                <div class="text-white mb-2">滚动速度</div>
+                                <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value="50"
+                                    class="w-full h-2 bg-secondary rounded-lg appearance-none cursor-pointer accent-primary"
+                                    id="speedSlider"
+                                    oninput="sliderSpeedChange(this.value)"
+                                >
+                                <div class="text-white text-sm mt-1" id="speedValue">50</div>
+                            </div>
+
+                            <div class="grid grid-cols-2 gap-4">
+                                <div class="open-animate flex items-center justify-between">
+                                    <div class="open-desc text-white">律动效果</div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer" id="bouncedSwitch" onchange="toggleBounced()">
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+
+                                <div class="open-animate flex items-center justify-between">
+                                    <div class="open-desc text-white">滚动</div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" checked class="sr-only peer" id="slideOnSwitch" onchange="toggleSlideOn()">
+                                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 颜色标签页 -->
+                    <div class="tab-content hidden" id="tab2">
+                        <div class="content p-4">
+                            <div class="mb-4">
+                                <div class="text-white mb-2">文字颜色</div>
+                                <div class="color-tags flex flex-wrap gap-2">
+                                    <div class="color-tag w-16 h-10 rounded cursor-pointer active-tag" style="background-color: #ffffff" onclick="setActiveColor('#ffffff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #FF7F00" onclick="setActiveColor('#FF7F00')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #8B00FF" onclick="setActiveColor('#8B00FF')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #00ffff" onclick="setActiveColor('#00ffff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #000000" onclick="setActiveColor('#000000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #0000ff" onclick="setActiveColor('#0000ff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ff00ff" onclick="setActiveColor('#ff00ff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #808080" onclick="setActiveColor('#808080')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #008000" onclick="setActiveColor('#008000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #00ff00" onclick="setActiveColor('#00ff00')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ff0000" onclick="setActiveColor('#ff0000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ffff00" onclick="setActiveColor('#ffff00')"></div>
+                                </div>
+                            </div>
+
+                            <div>
+                                <div class="text-white mb-2">背景颜色</div>
+                                <div class="color-tags flex flex-wrap gap-2">
+                                    <div class="color-tag w-16 h-10 rounded cursor-pointer active-tag" style="background-color: #000000" onclick="setActiveBgColor('#000000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ffffff" onclick="setActiveBgColor('#ffffff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #FF7F00" onclick="setActiveBgColor('#FF7F00')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #8B00FF" onclick="setActiveBgColor('#8B00FF')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #00ffff" onclick="setActiveBgColor('#00ffff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #0000ff" onclick="setActiveBgColor('#0000ff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ff00ff" onclick="setActiveBgColor('#ff00ff')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #808080" onclick="setActiveBgColor('#808080')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #008000" onclick="setActiveBgColor('#008000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #00ff00" onclick="setActiveBgColor('#00ff00')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ff0000" onclick="setActiveBgColor('#ff0000')"></div>
+                                    <div class="color-tag w-14 h-8 rounded cursor-pointer" style="background-color: #ffff00" onclick="setActiveBgColor('#ffff00')"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 自定义文字输入 -->
+                <div class="text-content flex items-center justify-between mt-4 p-4 border-t border-gray-600">
+                    <input
+                        type="text"
+                        class="ipt flex-1 bg-transparent border border-gray-500 rounded px-3 py-2 text-white focus:outline-none focus:border-primary"
+                        placeholder="请输入弹幕文字"
+                        value="欢迎❤️欢迎"
+                        id="customText"
+                    >
+                    <button
+                        class="ml-3 bg-primary text-white px-4 py-2 rounded text-sm"
+                        onclick="setCustomText()"
+                    >
+                        完成
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 浮动按钮 -->
+        <div class="fixed bottom-20 right-6 z-40">
+            <button class="bg-primary text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg" id="floatBtn">
+                <i class="fa fa-info"></i>
+            </button>
+            <div class="hidden absolute bottom-16 right-0 bg-dark text-white text-xs rounded p-3 max-w-xs" id="floatDesc">
+                在线手持LED工具，可以让你在任何场合高效地展示文字、图片或动画等信息，让你可以自由地编写和展示内容。手持弹幕LED工具它也具有多种颜色和字体，可以满足不同用户的需求。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 状态变量
+        let showActionSheet = true;
+        let tab = 0;
+        let size = 250;
+        let speed = 50;
+        let bounced = true;
+        let slideOn = true;
+        let animationDuration = 5;
+        let activeColor = '#ffffff';
+        let activeBgColor = '#000000';
+        let textContent = '欢迎❤️欢迎';
+
+        // DOM元素
+        const actionSheetEl = document.getElementById('actionSheet');
+        const textContentEl = document.getElementById('textContent');
+        const textRollEl = document.getElementById('textRoll');
+        const textRollWrapperEl = document.getElementById('textRollWrapper');
+        const textAreaEl = document.querySelector('.text-area');
+        const sizeSliderEl = document.getElementById('sizeSlider');
+        const sizeValueEl = document.getElementById('sizeValue');
+        const speedSliderEl = document.getElementById('speedSlider');
+        const speedValueEl = document.getElementById('speedValue');
+        const bouncedSwitchEl = document.getElementById('bouncedSwitch');
+        const slideOnSwitchEl = document.getElementById('slideOnSwitch');
+        const customTextEl = document.getElementById('customText');
+        const floatBtnEl = document.getElementById('floatBtn');
+        const floatDescEl = document.getElementById('floatDesc');
+
+        // 初始化
+        function init() {
+            // 从URL参数加载配置
+            const params = new URLSearchParams(window.location.search);
+            if (params.has('size')) size = parseInt(params.get('size'));
+            if (params.has('speed')) speed = parseInt(params.get('speed'));
+            if (params.has('bounced')) bounced = params.get('bounced') === '1';
+            if (params.has('slideOn')) slideOn = params.get('slideOn') === '1';
+            if (params.has('activeColor')) activeColor = '#' + params.get('activeColor');
+            if (params.has('activeBgColor')) activeBgColor = '#' + params.get('activeBgColor');
+            if (params.has('textContent')) {
+                textContent = params.get('textContent');
+                showActionSheet = false;
+            }
+
+            // 更新UI
+            updateUI();
+
+            // 初始化动画
+            updateAnimation();
+
+            // 显示或隐藏设置面板
+            if (showActionSheet) {
+                actionSheetEl.classList.remove('translate-y-full');
+            }
+        }
+
+        // 更新UI
+        function updateUI() {
+            // 更新显示文本
+            textContentEl.textContent = textContent;
+            customTextEl.value = textContent;
+
+            // 更新大小 - 修复字体大小调节问题的核心部分
+            sizeSliderEl.value = size;
+            sizeValueEl.textContent = size;
+            // 使用像素单位代替rpx，确保在所有设备上都能正确显示
+            const fontSize = Math.min(Math.max(size, 50), 600) / 2; // 转换为合适的像素值
+            textContentEl.style.fontSize = `${fontSize}px`;
+
+            // 更新速度
+            speedSliderEl.value = speed;
+            speedValueEl.textContent = speed;
+
+            // 更新开关状态
+            bouncedSwitchEl.checked = bounced;
+            slideOnSwitchEl.checked = slideOn;
+
+            // 更新颜色
+            textAreaEl.style.color = activeColor;
+            textAreaEl.style.backgroundColor = activeBgColor;
+
+            // 更新动画状态
+            if (bounced) {
+                textContentEl.classList.add('text-shadow-animated');
+            } else {
+                textContentEl.classList.remove('text-shadow-animated');
+            }
+        }
+
+        // 更新动画
+        function updateAnimation() {
+            if (speed === 0) {
+                animationDuration = 0;
+                textRollEl.style.animationDuration = '0s';
+                textRollEl.style.animationName = 'none';
+            } else {
+                animationDuration = 10.1 - speed / 10;
+                textRollEl.style.animationDuration = `${animationDuration}s`;
+
+                if (slideOn) {
+                    textRollEl.style.animationName = 'slide';
+                } else {
+                    textRollEl.style.animationName = 'none';
+                }
+            }
+        }
+
+        // 切换设置面板显示
+        function toggleShowActionSheet() {
+            showActionSheet = !showActionSheet;
+            if (showActionSheet) {
+                actionSheetEl.classList.remove('translate-y-full');
+            } else {
+                actionSheetEl.classList.add('translate-y-full');
+            }
+        }
+
+        // 切换标签页
+        function switchTab(index) {
+            tab = index;
+
+            // 更新标签页样式
+            document.querySelectorAll('.tab-item').forEach((item, i) => {
+                if (i === index) {
+                    item.classList.add('text-white', 'border-primary');
+                    item.classList.remove('text-white/70', 'border-transparent');
+                } else {
+                    item.classList.add('text-white/70', 'border-transparent');
+                    item.classList.remove('text-white', 'border-primary');
+                }
+            });
+
+            // 显示选中的标签页内容
+            document.querySelectorAll('.tab-content').forEach((content, i) => {
+                if (i === index) {
+                    content.classList.remove('hidden');
+                } else {
+                    content.classList.add('hidden');
+                }
+            });
+        }
+
+        // 大小滑块变化 - 修复字体调节功能
+        function sliderSizeChange(value) {
+            size = parseInt(value);
+            sizeValueEl.textContent = size;
+            // 直接更新字体大小
+            const fontSize = Math.min(Math.max(size, 50), 600) / 2;
+            textContentEl.style.fontSize = `${fontSize}px`;
+        }
+
+        // 速度滑块变化
+        function sliderSpeedChange(value) {
+            speed = parseInt(value);
+            speedValueEl.textContent = speed;
+            debounce(updateAnimation, 300)();
+        }
+
+        // 切换律动效果
+        function toggleBounced() {
+            bounced = !bounced;
+            if (bounced) {
+                textContentEl.classList.add('text-shadow-animated');
+            } else {
+                textContentEl.classList.remove('text-shadow-animated');
+            }
+        }
+
+        // 切换滚动效果
+        function toggleSlideOn() {
+            slideOn = !slideOn;
+            updateAnimation();
+        }
+
+        // 设置文字颜色
+        function setActiveColor(color) {
+            activeColor = color;
+            textAreaEl.style.color = activeColor;
+
+            // 更新选中状态
+            document.querySelectorAll('.color-tags:first-child .color-tag').forEach(tag => {
+                tag.classList.remove('w-16', 'h-10', 'active-tag');
+                tag.classList.add('w-14', 'h-8');
+            });
+            event.currentTarget.classList.remove('w-14', 'h-8');
+            event.currentTarget.classList.add('w-16', 'h-10', 'active-tag');
+        }
+
+        // 设置背景颜色
+        function setActiveBgColor(color) {
+            activeBgColor = color;
+            textAreaEl.style.backgroundColor = activeBgColor;
+
+            // 更新选中状态
+            document.querySelectorAll('.color-tags:last-child .color-tag').forEach(tag => {
+                tag.classList.remove('w-16', 'h-10', 'active-tag');
+                tag.classList.add('w-14', 'h-8');
+            });
+            event.currentTarget.classList.remove('w-14', 'h-8');
+            event.currentTarget.classList.add('w-16', 'h-10', 'active-tag');
+        }
+
+        // 设置预设文字
+        function setText(text) {
+            textContent = text;
+            customTextEl.value = text;
+            textContentEl.textContent = text;
+        }
+
+        // 设置自定义文字
+        function setCustomText() {
+            const text = customTextEl.value.trim();
+            if (text) {
+                textContent = text;
+                textContentEl.textContent = text;
+            }
+            toggleShowActionSheet();
+        }
+
+        // 浮动按钮点击事件
+        floatBtnEl.addEventListener('click', () => {
+            floatDescEl.classList.toggle('hidden');
+        });
+
+        // 防抖函数
+        function debounce(func, wait) {
+            let timeout;
+            return function() {
+                const context = this;
+                const args = arguments;
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(context, args), wait);
+            };
+        }
+
+        // 初始化页面
+        window.onload = init;
+    </script>
+</body>
+</html>

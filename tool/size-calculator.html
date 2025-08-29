@@ -1,0 +1,1149 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尺码计算器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 20px;
+        }
+        .picker {
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .fuzhuang {
+            margin-top: 20px;
+        }
+        input.form-control {
+            margin-bottom: 15px;
+        }
+        .chimaInfo {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 4px;
+            color: #dc3545;
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            display: none; /* 默认隐藏结果区域 */
+        }
+        .cmb_con {
+            margin-top: 20px;
+        }
+        .title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            font-size: 1.2rem;
+        }
+        .shuoming {
+            font-size: 0.9rem;
+            margin-top: 15px;
+            color: #666;
+        }
+        .table-responsive {
+            margin-top: 10px;
+        }
+        .bg-g {
+            background-color: #e6f3f9;
+        }
+        .scroll-view {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+        .result-box {
+            background-color: #f8f9fa;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        .alert-success {
+            color: #155724;
+            background-color: #d4edda;
+            border-color: #c3e6cb;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="section">
+        <div class="input-group">
+            <label class="input-group-text" style="font-weight: bold;">计算类型：</label>
+            <select class="form-select" id="kdgsSelect" onchange="bindPickerChange(this)">
+                <option value="3">女装</option>
+                <option value="7">男装</option>
+                <option value="4">女衬衫</option>
+                <option value="5">连衣裙</option>
+                <option value="6">女裤子</option>
+                <option value="8">男衬衫</option>
+                <option value="9">男西装</option>
+                <option value="10">男裤子</option>
+                <option value="11">童装</option>
+                <option value="12">婴童装(0-1.5岁)</option>
+                <option value="13">中童装(1.5-10岁)</option>
+                <option value="14">大童装(10-15岁)</option>
+                <option value="15">文胸</option>
+                <option value="16">内裤</option>
+                <option value="17">鞋码</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="fuzhuang">
+        <div id="inputFields">
+            <input type="number" class="form-control" id="shengao" placeholder="您的身高，单位：厘米">
+            <input type="number" class="form-control" id="tizhong" placeholder="您的体重，单位：斤">
+            <div id="additionalFields"></div> <!-- 用于添加额外输入项 -->
+            <button type="button" class="btn btn-primary" onclick="btnClick()">生成尺码</button>
+        </div>
+
+        <div class="scroll-view mt-3">
+            <div id="chimaInfo" class="chimaInfo"></div>
+
+            <div class="cmb_con">
+                <div class="title" id="cm_title">女装标准尺码对照表</div>
+
+                <!-- 尺码表格容器 -->
+                <div id="sizeTableContainer">
+                    <!-- 表格内容将通过JS动态生成 -->
+                </div>
+
+                <div class="shuoming" id="cm_shuoming">
+                    说明：<br>
+                    上述提供的计算公式是根据经验得到的数据参数，适用于绝大多数人群，不适用于特殊体型要求。<br>
+                    国内比较普遍的一个判断胖瘦的公式是：<br>
+                    女性之标准体重（千克）＝身长（厘米）－102<br>
+                    注意：身高体重与尺寸没有绝对的关系，155CM丰腴和168CM瘦高的女生也许会穿同一个尺寸。胸围是影响上衣尺寸选择的关键因素，建议你可以以胸围选择。
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    let ci = 3; // 默认选中女装
+    let shengaoInput = document.getElementById('shengao');
+    let tizhongInput = document.getElementById('tizhong');
+    let inputFields = document.getElementById('inputFields');
+    let additionalFields = document.getElementById('additionalFields');
+
+    // 页面加载完成后初始化
+    window.onload = function() {
+        bindPickerChange(document.getElementById('kdgsSelect'));
+    };
+
+    // 尺码数据映射表
+    const sizeData = {
+        3: {
+            title: "女装标准尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">上衣尺码</td>
+                                <td>S</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                                <td>XXL</td>
+                                <td>XXXL</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">服装尺码</td>
+                                <td>36</td>
+                                <td>38</td>
+                                <td>40</td>
+                                <td>42</td>
+                                <td>44</td>
+                                <td>46</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>胸围/cm</td>
+                                <td>79-82</td>
+                                <td>83-86</td>
+                                <td>87-90</td>
+                                <td>91-94</td>
+                                <td>95-98</td>
+                                <td>99-103</td>
+                            </tr>
+                            <tr>
+                                <td>腰围/cm</td>
+                                <td>62-66</td>
+                                <td>67-70</td>
+                                <td>71-74</td>
+                                <td>75-78</td>
+                                <td>79-82</td>
+                                <td>83-86</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>肩宽/cm</td>
+                                <td>37</td>
+                                <td>38</td>
+                                <td>39</td>
+                                <td>40</td>
+                                <td>41</td>
+                                <td>42</td>
+                            </tr>
+                            <tr>
+                                <td>身高</td>
+                                <td>155</td>
+                                <td>160</td>
+                                <td>165</td>
+                                <td>170</td>
+                                <td>172</td>
+                                <td>175</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>上述提供的计算公式是根据经验得到的数据参数，适用于绝大多数人群，不适用于特殊体型要求。<br>国内比较普遍的一个判断胖瘦的公式是：<br>女性之标准体重（千克）＝身长（厘米）－102<br>注意：身高体重与尺寸没有绝对的关系，155CM丰腴和168CM瘦高的女生也许会穿同一个尺寸。胸围是影响上衣尺寸选择的关键因素，建议你可以以胸围选择。`,
+            tishi1: "您的身高，单位：厘米",
+            tishi2: "您的体重，单位：斤",
+            additional: []
+        },
+        7: {
+            title: "男装标准尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">上衣尺码</td>
+                                <td>S</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                                <td>XXL</td>
+                                <td>XXXL</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">服装尺码</td>
+                                <td>165/84A</td>
+                                <td>170/88A</td>
+                                <td>175/92A</td>
+                                <td>180/96A</td>
+                                <td>185/100A</td>
+                                <td>190/104A</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>胸围/cm</td>
+                                <td>82-85</td>
+                                <td>86-89</td>
+                                <td>90-93</td>
+                                <td>94-97</td>
+                                <td>98-102</td>
+                                <td>103-107</td>
+                            </tr>
+                            <tr>
+                                <td>腰围/cm</td>
+                                <td>72-75</td>
+                                <td>76-79</td>
+                                <td>80-84</td>
+                                <td>85-88</td>
+                                <td>89-92</td>
+                                <td>93-96</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>肩宽/cm</td>
+                                <td>42</td>
+                                <td>44</td>
+                                <td>46</td>
+                                <td>48</td>
+                                <td>50</td>
+                                <td>52</td>
+                            </tr>
+                            <tr>
+                                <td>身高</td>
+                                <td>163-167</td>
+                                <td>168-172</td>
+                                <td>173-177</td>
+                                <td>178-182</td>
+                                <td>183-187</td>
+                                <td>188-192</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>男装尺码通常以身高/胸围来标示，如170/88A，其中170是身高，88是胸围，A代表正常体型。<br>男性标准体重计算公式：身高(cm) - 105 = 标准体重(kg)`,
+            tishi1: "您的身高，单位：厘米",
+            tishi2: "您的体重，单位：斤",
+            additional: []
+        },
+        4: {
+            title: "女衬衫标准尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">衬衫尺码</td>
+                                <td>S</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                                <td>XXL</td>
+                                <td>XXXL</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">国际尺码</td>
+                                <td>36</td>
+                                <td>37</td>
+                                <td>38</td>
+                                <td>39</td>
+                                <td>40</td>
+                                <td>41</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>胸围/cm</td>
+                                <td>79-82</td>
+                                <td>83-86</td>
+                                <td>87-90</td>
+                                <td>91-94</td>
+                                <td>95-98</td>
+                                <td>99-103</td>
+                            </tr>
+                            <tr>
+                                <td>腰围/cm</td>
+                                <td>62-66</td>
+                                <td>67-70</td>
+                                <td>71-74</td>
+                                <td>75-78</td>
+                                <td>79-82</td>
+                                <td>83-86</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>肩宽/cm</td>
+                                <td>37</td>
+                                <td>38</td>
+                                <td>39</td>
+                                <td>40</td>
+                                <td>41</td>
+                                <td>42</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `国家服装号型的含义 号型定义：<br>"号"指人体的身高，以cm为单位，是设计和选购服装长短的依据；"型"指人体的胸围和腰围，以cm为单位，是设计和选购服装肥瘦的依据。体型分类：以人体的胸围与腰围的差数为依据来划分体型，并将体型分为四类，体型分类代号分别为Y(偏瘦) 、A（正常）、B（偏胖）、C（肥胖）<br>本尺码对照表仅作参考之用。请您在试穿之后量身选择适合自己的尺寸。`,
+            tishi1: "您的身高，单位：厘米",
+            tishi2: "您的体重，单位：斤",
+            additional: []
+        },
+        5: {
+            title: "连衣裙尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">连衣裙尺码</td>
+                                <td>XS</td>
+                                <td>S</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                                <td>XXL</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">适合身高/cm</td>
+                                <td>150-155</td>
+                                <td>155-160</td>
+                                <td>160-165</td>
+                                <td>165-170</td>
+                                <td>170-175</td>
+                                <td>175-180</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>胸围/cm</td>
+                                <td>76-80</td>
+                                <td>80-84</td>
+                                <td>84-88</td>
+                                <td>88-92</td>
+                                <td>92-96</td>
+                                <td>96-100</td>
+                            </tr>
+                            <tr>
+                                <td>腰围/cm</td>
+                                <td>60-64</td>
+                                <td>64-68</td>
+                                <td>68-72</td>
+                                <td>72-76</td>
+                                <td>76-80</td>
+                                <td>80-84</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>臀围/cm</td>
+                                <td>84-88</td>
+                                <td>88-92</td>
+                                <td>92-96</td>
+                                <td>96-100</td>
+                                <td>100-104</td>
+                                <td>104-108</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>连衣裙的尺码选择不仅要考虑身高体重，还要考虑裙长和款式。<br>修身款建议参考胸围和腰围数据，宽松款可以适当选小一码。`,
+            tishi1: "您的身高，单位：厘米",
+            tishi2: "您的体重，单位：斤",
+            additional: [
+                {id: "xiongwei", placeholder: "您的胸围，单位：厘米"}
+            ]
+        },
+        6: {
+            title: "女裤子尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">裤子尺码</td>
+                                <td>25</td>
+                                <td>26</td>
+                                <td>27</td>
+                                <td>28</td>
+                                <td>29</td>
+                                <td>30</td>
+                                <td>31</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">腰围(市尺)</td>
+                                <td>1.8</td>
+                                <td>1.9</td>
+                                <td>2.0</td>
+                                <td>2.1</td>
+                                <td>2.2</td>
+                                <td>2.3</td>
+                                <td>2.4</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>腰围/cm</td>
+                                <td>60</td>
+                                <td>63</td>
+                                <td>67</td>
+                                <td>70</td>
+                                <td>73</td>
+                                <td>77</td>
+                                <td>80</td>
+                            </tr>
+                            <tr>
+                                <td>臀围/cm</td>
+                                <td>84</td>
+                                <td>87</td>
+                                <td>90</td>
+                                <td>93</td>
+                                <td>96</td>
+                                <td>99</td>
+                                <td>102</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>裤长/cm</td>
+                                <td>97</td>
+                                <td>98</td>
+                                <td>99</td>
+                                <td>100</td>
+                                <td>101</td>
+                                <td>102</td>
+                                <td>103</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>女裤尺码通常以腰围英寸为标示，25码约对应腰围60cm。<br>选购时除了腰围，还应考虑臀围和裤长，特别是个子较高或较矮的人群。`,
+            tishi1: "您的腰围，单位：厘米",
+            tishi2: "您的臀围，单位：厘米",
+            additional: [
+                {id: "shengao_kz", placeholder: "您的身高，单位：厘米（用于参考裤长）"}
+            ]
+        },
+        8: {
+            title: "男衬衫尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">衬衫尺码</td>
+                                <td>38</td>
+                                <td>39</td>
+                                <td>40</td>
+                                <td>41</td>
+                                <td>42</td>
+                                <td>43</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">领围/cm</td>
+                                <td>38</td>
+                                <td>39</td>
+                                <td>40</td>
+                                <td>41</td>
+                                <td>42</td>
+                                <td>43</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>胸围/cm</td>
+                                <td>92</td>
+                                <td>96</td>
+                                <td>100</td>
+                                <td>104</td>
+                                <td>108</td>
+                                <td>112</td>
+                            </tr>
+                            <tr>
+                                <td>肩宽/cm</td>
+                                <td>44</td>
+                                <td>45.5</td>
+                                <td>47</td>
+                                <td>48.5</td>
+                                <td>50</td>
+                                <td>51.5</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>衣长/cm</td>
+                                <td>74</td>
+                                <td>76</td>
+                                <td>78</td>
+                                <td>80</td>
+                                <td>82</td>
+                                <td>84</td>
+                            </tr>
+                            <tr>
+                                <td>适合身高/cm</td>
+                                <td>165-170</td>
+                                <td>170-175</td>
+                                <td>175-180</td>
+                                <td>180-185</td>
+                                <td>185-190</td>
+                                <td>190-195</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>男衬衫尺码通常以领围(厘米)为主要标示，选择时应以领围为主要参考。<br>正装衬衫宜合身，休闲衬衫可根据个人喜好选择合身或宽松版型。`,
+            tishi1: "您的领围，单位：厘米",
+            tishi2: "您的身高，单位：厘米",
+            additional: []
+        },
+        10: {
+            title: "男裤子尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td width="22%">裤子尺码</td>
+                                <td>28</td>
+                                <td>29</td>
+                                <td>30</td>
+                                <td>31</td>
+                                <td>32</td>
+                                <td>33</td>
+                                <td>34</td>
+                            </tr>
+                            <tr>
+                                <td width="22%">腰围(市尺)</td>
+                                <td>2.1</td>
+                                <td>2.2</td>
+                                <td>2.3</td>
+                                <td>2.4</td>
+                                <td>2.5</td>
+                                <td>2.6</td>
+                                <td>2.7</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>腰围/cm</td>
+                                <td>70</td>
+                                <td>73</td>
+                                <td>77</td>
+                                <td>80</td>
+                                <td>83</td>
+                                <td>87</td>
+                                <td>90</td>
+                            </tr>
+                            <tr>
+                                <td>臀围/cm</td>
+                                <td>95</td>
+                                <td>98</td>
+                                <td>101</td>
+                                <td>104</td>
+                                <td>107</td>
+                                <td>110</td>
+                                <td>113</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>裤长/cm</td>
+                                <td>102</td>
+                                <td>103</td>
+                                <td>104</td>
+                                <td>105</td>
+                                <td>106</td>
+                                <td>107</td>
+                                <td>108</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: `说明：<br>男裤尺码通常以腰围英寸为标示，28码约对应腰围70cm。<br>牛仔裤建议按实际腰围选择，休闲裤可根据版型适当调整。`,
+            tishi1: "您的腰围，单位：厘米",
+            tishi2: "您的臀围，单位：厘米",
+            additional: []
+        },
+        15: {
+            title: "文胸尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td>下胸围(cm)</td>
+                                <td>上胸围(cm)</td>
+                                <td>国际尺码</td>
+                                <td>下胸围(cm)</td>
+                                <td>上胸围(cm)</td>
+                                <td>国际尺码</td>
+                            </tr>
+                            <tr>
+                                <td>68-72</td>
+                                <td>80</td>
+                                <td>32/70A</td>
+                                <td>73-77</td>
+                                <td>85</td>
+                                <td>34/75A</td>
+                            </tr>
+                            <tr>
+                                <td>68-72</td>
+                                <td>83</td>
+                                <td>32/70B</td>
+                                <td>73-77</td>
+                                <td>88</td>
+                                <td>34/75B</td>
+                            </tr>
+                            <tr>
+                                <td>68-72</td>
+                                <td>85</td>
+                                <td>32/70C</td>
+                                <td>73-77</td>
+                                <td>90</td>
+                                <td>34/75C</td>
+                            </tr>
+                            <tr>
+                                <td>68-72</td>
+                                <td>88</td>
+                                <td>32/70D</td>
+                                <td>73-77</td>
+                                <td>95</td>
+                                <td>34/75D</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: "注意：<br>本尺码仅作参考之用。请您在试穿之后量身选择适合自己的尺码。",
+            tishi1: "上胸围，单位：厘米",
+            tishi2: "下胸围，单位：厘米",
+            additional: []
+        },
+        16: {
+            title: "内裤尺码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr>
+                                <td colspan="5" style="width: 100%">女式内裤</td>
+                            </tr>
+                            <tr>
+                                <td>尺码</td>
+                                <td>S</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                            </tr>
+                            <tr>
+                                <td>腰围</td>
+                                <td>55-61</td>
+                                <td>61-67</td>
+                                <td>67-73</td>
+                                <td>73-79</td>
+                            </tr>
+                            <tr>
+                                <td>臀围</td>
+                                <td>80-86</td>
+                                <td>85-93</td>
+                                <td>90-98</td>
+                                <td>95-103</td>
+                            </tr>
+                            <tr>
+                                <td colspan="5" style="width: 100%">男式内裤</td>
+                            </tr>
+                            <tr>
+                                <td>尺码</td>
+                                <td>M</td>
+                                <td>L</td>
+                                <td>XL</td>
+                                <td>XXL</td>
+                            </tr>
+                            <tr>
+                                <td>腰围</td>
+                                <td>62-70</td>
+                                <td>66-74</td>
+                                <td>72-82</td>
+                                <td>76-84</td>
+                            </tr>
+                            <tr>
+                                <td>臀围</td>
+                                <td>85-95</td>
+                                <td>90-100</td>
+                                <td>95-105</td>
+                                <td>100-110</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: "注意：<br>本尺码仅作参考之用。请您在试穿之后量身选择适合自己的尺码。",
+            tishi1: "腰围，单位：厘米",
+            tishi2: "臀围，单位：厘米",
+            additional: []
+        },
+        17: {
+            title: "鞋码对照表",
+            table: `
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <tr class="bg-g">
+                                <td>中国码(mm)</td>
+                                <td>欧码(EU)</td>
+                                <td>美码(US男)</td>
+                                <td>美码(US女)</td>
+                                <td>英码(UK)</td>
+                            </tr>
+                            <tr>
+                                <td>220</td>
+                                <td>34</td>
+                                <td>3.5</td>
+                                <td>5</td>
+                                <td>3</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>225</td>
+                                <td>35</td>
+                                <td>4</td>
+                                <td>5.5</td>
+                                <td>3.5</td>
+                            </tr>
+                            <tr>
+                                <td>230</td>
+                                <td>36</td>
+                                <td>4.5</td>
+                                <td>6</td>
+                                <td>4</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>235</td>
+                                <td>37</td>
+                                <td>5</td>
+                                <td>6.5</td>
+                                <td>4.5</td>
+                            </tr>
+                            <tr>
+                                <td>240</td>
+                                <td>38</td>
+                                <td>5.5</td>
+                                <td>7</td>
+                                <td>5</td>
+                            </tr>
+                            <tr class="bg-g">
+                                <td>245</td>
+                                <td>39</td>
+                                <td>6</td>
+                                <td>7.5</td>
+                                <td>5.5</td>
+                            </tr>
+                            <tr>
+                                <td>250</td>
+                                <td>40</td>
+                                <td>6.5</td>
+                                <td>8</td>
+                                <td>6</td>
+                            </tr>
+                        </table>
+                    </div>
+                `,
+            shuoming: "说明：<br>中国鞋码通常以毫米为单位，表示脚的长度。<br>不同品牌的鞋码可能存在差异，建议参考具体品牌的尺码表。",
+            tishi1: "您的脚长，单位：毫米",
+            tishi2: "请选择性别",
+            additional: [
+                {id: "xingbie", type: "select", options: [
+                        {value: "male", text: "男"},
+                        {value: "female", text: "女"}
+                    ]}
+            ]
+        }
+        // 可以继续添加其他尺码数据...
+    };
+
+    // 当选择类型变化时更新界面
+    function bindPickerChange(selectElement) {
+        ci = selectElement.value;
+        const data = sizeData[ci] || sizeData[3]; // 默认使用女装数据
+
+        // 更新标题和说明
+        document.getElementById('cm_title').textContent = data.title;
+        document.getElementById('cm_shuoming').innerHTML = data.shuoming;
+        document.getElementById('sizeTableContainer').innerHTML = data.table;
+
+        // 更新输入框提示
+        if (shengaoInput && tizhongInput) {
+            shengaoInput.placeholder = data.tishi1;
+            tizhongInput.placeholder = data.tishi2;
+
+            // 重置输入框类型
+            shengaoInput.type = data.tishi1.includes("选择") ? "text" : "number";
+            tizhongInput.type = data.tishi2.includes("选择") ? "text" : "number";
+        }
+
+        // 添加额外输入字段
+        additionalFields.innerHTML = "";
+        if (data.additional && data.additional.length > 0) {
+            data.additional.forEach(field => {
+                if (field.type === "select") {
+                    let selectHtml = `<select class="form-select" id="${field.id}" style="margin-bottom:15px">`;
+                    field.options.forEach(option => {
+                        selectHtml += `<option value="${option.value}">${option.text}</option>`;
+                    });
+                    selectHtml += `</select>`;
+                    additionalFields.innerHTML += selectHtml;
+                } else {
+                    additionalFields.innerHTML += `
+                            <input type="number" class="form-control" id="${field.id}"
+                                   placeholder="${field.placeholder}">
+                        `;
+                }
+            });
+        }
+    }
+
+    // 点击生成尺码按钮时执行
+    function btnClick() {
+        const value1 = shengaoInput.type === "number" ? parseFloat(shengaoInput.value) : shengaoInput.value;
+        const value2 = tizhongInput.type === "number" ? parseFloat(tizhongInput.value) : tizhongInput.value;
+        const resultElement = document.getElementById('chimaInfo');
+
+        // 验证输入
+        if ((shengaoInput.type === "number" && isNaN(value1)) ||
+            (tizhongInput.type === "number" && isNaN(value2))) {
+            resultElement.innerHTML = "<strong>请输入有效的数值！</strong>";
+            resultElement.style.display = "block";
+            return;
+        }
+
+        // 获取额外输入字段的值
+        const additionalValues = {};
+        const data = sizeData[ci] || sizeData[3];
+        if (data.additional && data.additional.length > 0) {
+            data.additional.forEach(field => {
+                const elem = document.getElementById(field.id);
+                if (elem) {
+                    additionalValues[field.id] = elem.type === "number" ? parseFloat(elem.value) : elem.value;
+                    // 验证额外字段
+                    if (elem.type === "number" && isNaN(additionalValues[field.id])) {
+                        resultElement.innerHTML = `<strong>请输入有效的${field.placeholder}！</strong>`;
+                        resultElement.style.display = "block";
+                        return;
+                    }
+                }
+            });
+        }
+
+        // 根据不同类型计算推荐尺码
+        let result = "";
+        switch(ci) {
+            case "3": // 女装
+                result = calculateWomenClothes(value1, value2);
+                break;
+            case "7": // 男装
+                result = calculateMenClothes(value1, value2);
+                break;
+            case "4": // 女衬衫
+                result = calculateWomenShirt(value1, value2);
+                break;
+            case "5": // 连衣裙
+                result = calculateDress(value1, value2, additionalValues.xiongwei);
+                break;
+            case "6": // 女裤子
+                result = calculateWomenPants(value1, value2, additionalValues.shengao_kz);
+                break;
+            case "8": // 男衬衫
+                result = calculateMenShirt(value1, value2);
+                break;
+            case "10": // 男裤子
+                result = calculateMenPants(value1, value2);
+                break;
+            case "15": // 文胸
+                result = calculateBraSize(value1, value2);
+                break;
+            case "16": // 内裤
+                result = calculateUnderwearSize(value1, value2);
+                break;
+            case "17": // 鞋码
+                result = calculateShoeSize(value1, value2, additionalValues.xingbie);
+                break;
+            default:
+                result = "<strong>抱歉，该类型的尺码计算功能正在开发中</strong>";
+        }
+
+        // 显示结果
+        resultElement.innerHTML = result;
+        resultElement.style.display = "block";
+        // 添加成功提示样式
+        resultElement.classList.add('alert-success');
+    }
+
+    // 女装尺码计算
+    function calculateWomenClothes(height, weight) {
+        const bmi = (weight / 2) / (height / 100) **2;
+        let size = "";
+
+        if (height < 155) {
+            size = "S";
+        } else if (height < 165) {
+            size = bmi < 20 ? "S" : bmi < 24 ? "M" : "L";
+        } else if (height < 175) {
+            size = bmi < 20 ? "M" : bmi < 24 ? "L" : "XL";
+        } else {
+            size = bmi < 22 ? "L" : "XL";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的身高：${height}cm，体重：${weight}斤<br>
+                    BMI指数：${bmi.toFixed(1)}（正常范围18.5-23.9）`;
+    }
+
+    // 男装尺码计算
+    function calculateMenClothes(height, weight) {
+        const bmi = (weight / 2) / (height / 100)** 2;
+        let size = "";
+
+        if (height < 165) {
+            size = "S (165/84A)";
+        } else if (height < 175) {
+            size = bmi < 20 ? "M (170/88A)" : bmi < 24 ? "L (175/92A)" : "XL (180/96A)";
+        } else if (height < 185) {
+            size = bmi < 20 ? "L (175/92A)" : bmi < 24 ? "XL (180/96A)" : "XXL (185/100A)";
+        } else {
+            size = bmi < 22 ? "XL (180/96A)" : "XXL (185/100A) 或 XXXL (190/104A)";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的身高：${height}cm，体重：${weight}斤<br>
+                    BMI指数：${bmi.toFixed(1)}（正常范围18.5-23.9）`;
+    }
+
+    // 女衬衫尺码计算
+    function calculateWomenShirt(height, weight) {
+        let size = "";
+
+        if (height < 155 && weight < 90) {
+            size = "S (36)";
+        } else if (height < 165 && weight < 110) {
+            size = "M (37-38)";
+        } else if (height < 175 && weight < 130) {
+            size = "L (38-39)";
+        } else {
+            size = "XL (40及以上)";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的身高：${height}cm，体重：${weight}斤`;
+    }
+
+    // 连衣裙尺码计算
+    function calculateDress(height, weight, bust) {
+        if (!bust) {
+            return `<strong>请输入胸围信息以获得更准确的推荐</strong>`;
+        }
+
+        let size = "";
+
+        if (height < 155) {
+            size = bust < 80 ? "XS" : bust < 84 ? "S" : "M";
+        } else if (height < 165) {
+            size = bust < 84 ? "S" : bust < 88 ? "M" : bust < 92 ? "L" : "XL";
+        } else if (height < 175) {
+            size = bust < 88 ? "M" : bust < 92 ? "L" : bust < 96 ? "XL" : "XXL";
+        } else {
+            size = bust < 92 ? "L" : bust < 96 ? "XL" : "XXL";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的身高：${height}cm，体重：${weight}斤，胸围：${bust}cm`;
+    }
+
+    // 女裤子尺码计算
+    function calculateWomenPants(waist, hip, height) {
+        let size = "";
+
+        if (waist < 60) {
+            size = "24码";
+        } else if (waist < 63) {
+            size = "25码";
+        } else if (waist < 67) {
+            size = "26码";
+        } else if (waist < 70) {
+            size = "27码";
+        } else if (waist < 73) {
+            size = "28码";
+        } else if (waist < 77) {
+            size = "29码";
+        } else if (waist < 80) {
+            size = "30码";
+        } else {
+            size = "31码及以上";
+        }
+
+        let lengthTip = "";
+        if (height) {
+            if (height < 155 && size >= "28码") lengthTip = "<br>提示：您可能需要修改裤长";
+            if (height > 170 && size <= "26码") lengthTip = "<br>提示：您可能需要选择加长款";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的腰围：${waist}cm，臀围：${hip}cm${lengthTip}`;
+    }
+
+    // 男衬衫尺码计算
+    function calculateMenShirt(collar, height) {
+        let size = "";
+
+        if (collar < 38) {
+            size = "37码";
+        } else if (collar < 39) {
+            size = "38码";
+        } else if (collar < 40) {
+            size = "39码";
+        } else if (collar < 41) {
+            size = "40码";
+        } else if (collar < 42) {
+            size = "41码";
+        } else if (collar < 43) {
+            size = "42码";
+        } else {
+            size = "43码及以上";
+        }
+
+        let heightTip = "";
+        if (height) {
+            if (height < 165 && collar >= 40) heightTip = "<br>提示：建议试穿，注意衣长";
+            if (height > 185 && collar <= 39) heightTip = "<br>提示：建议试穿，注意衣长";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的领围：${collar}cm，身高：${height}cm${heightTip}`;
+    }
+
+    // 男裤子尺码计算
+    function calculateMenPants(waist, hip) {
+        let size = "";
+
+        if (waist < 70) {
+            size = "27码";
+        } else if (waist < 73) {
+            size = "28码";
+        } else if (waist < 77) {
+            size = "29码";
+        } else if (waist < 80) {
+            size = "30码";
+        } else if (waist < 83) {
+            size = "31码";
+        } else if (waist < 87) {
+            size = "32码";
+        } else if (waist < 90) {
+            size = "33码";
+        } else {
+            size = "34码及以上";
+        }
+
+        return `<strong>推荐尺码：${size}</strong><br>
+                    您的腰围：${waist}cm，臀围：${hip}cm`;
+    }
+
+    // 文胸尺码计算 - 修复了变量名错误
+    function calculateBraSize(upperBust, lowerBust) {
+        const cupDiff = upperBust - lowerBust;
+        let cup = "";
+
+        if (cupDiff < 10) cup = "A";
+        else if (cupDiff < 15) cup = "B";
+        else if (cupDiff < 20) cup = "C";
+        else if (cupDiff < 25) cup = "D";
+        else cup = "E";
+
+        // 下胸围尺码
+        let bandSize = Math.round(lowerBust / 5) * 5;
+        let chinaSize = Math.round(bandSize / 2.5) + cup;
+
+        return `<strong>推荐文胸尺码：${bandSize}${cup} / ${chinaSize}</strong><br>
+                    您的上胸围：${upperTypeBust}cm，下胸围：${lowerBust}cm<br>
+                    罩杯差：${cupDiff}cm，对应罩杯：${cup}`;
+    }
+
+    // 内裤尺码计算
+    function calculateUnderwearSize(waist, hip) {
+        // 判断当前是否是男士内裤
+        const isMale = ci === "16" && waist > 70; // 简单判断
+
+        let size = "";
+
+        if (isMale) {
+            if (waist < 70 && hip < 95) {
+                size = "M";
+            } else if (waist < 74 && hip < 100) {
+                size = "L";
+            } else if (waist < 82 && hip < 105) {
+                size = "XL";
+            } else {
+                size = "XXL";
+            }
+        } else {
+            if (waist < 61 && hip < 86) {
+                size = "S";
+            } else if (waist < 70 && hip < 93) {
+                size = "M";
+            } else if (waist < 80 && hip < 100) {
+                size = "L";
+            } else {
+                size = "XL";
+            }
+        }
+
+        return `<strong>推荐内裤尺码：${size}</strong><br>
+                    您的腰围：${waist}cm，臀围：${hip}cm`;
+    }
+
+    // 鞋码计算
+    function calculateShoeSize(footLength, genderText, gender) {
+        if (!gender) gender = genderText === "男" ? "male" : "female";
+
+        // 中国码直接对应脚长(mm)
+        const chinaSize = Math.round(footLength / 5) * 5;
+        // 欧码计算公式
+        const euSize = Math.round(chinaSize / 5 + 50);
+        // 美码和英码根据性别有差异
+        let usSize, ukSize;
+
+        if (gender === "male") {
+            usSize = (chinaSize - 220) / 5 + 3.5;
+            ukSize = usSize - 0.5;
+        } else {
+            usSize = (chinaSize - 220) / 5 + 5;
+            ukSize = usSize - 2;
+        }
+
+        return `<strong>推荐鞋码：</strong><br>
+                    中国码：${chinaSize}mm<br>
+                    欧码(EU)：${euSize}<br>
+                    美码(US)：${usSize.toFixed(1)}<br>
+                    英码(UK)：${ukSize.toFixed(1)}<br>
+                    <small>提示：不同品牌可能存在差异，建议参考具体品牌尺码表</small>`;
+    }
+</script>
+</body>
+</html>

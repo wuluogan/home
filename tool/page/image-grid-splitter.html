@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>九宫格切图工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+            font-size: 16px;
+            color: #757575;
+            background-color: #eeeeee;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .button {
+            width: 100%;
+            font-size: 16px;
+            margin: 10px 0;
+            background-color: #0bc15f;
+            border-radius: 4px;
+            text-align: center;
+            height: 50px;
+            line-height: 50px;
+            color: #ffffff;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .button:hover {
+            background-color: #009944;
+            color: #ffffff;
+        }
+
+        .image-container {
+            position: relative;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .main-image {
+            display: block;
+            width: 100%;
+            height: auto;
+            position: relative;
+            z-index: 99;
+        }
+
+        .grid-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 100;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+
+        .grid-cell {
+            box-sizing: border-box;
+            border: 1px dashed rgba(255, 255, 255, 0.7);
+            background-color: rgba(0, 0, 0, 0.3);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .grid-cell:nth-child(odd) {
+            background-color: rgba(251, 114, 160, 0.4);
+        }
+
+        .grid-cell:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        #imageCanvas {
+            display: none;
+        }
+
+        .action-sheet {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: white;
+            border-top-left-radius: 15px;
+            border-top-right-radius: 15px;
+            padding: 20px;
+            box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+
+        .action-sheet.show {
+            transform: translateY(0);
+        }
+
+        .action-sheet-title {
+            text-align: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #eee;
+            margin-bottom: 10px;
+        }
+
+        .action-item {
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #eee;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .action-item:last-child {
+            border-bottom: none;
+        }
+
+        .action-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .cancel-btn {
+            margin-top: 10px;
+            padding: 15px;
+            text-align: center;
+            background-color: #f5f5f5;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .mask {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+            display: none;
+        }
+
+        .mask.show {
+            display: block;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1001;
+            display: none;
+        }
+
+        .toast.show {
+            display: block;
+            animation: fadeInOut 2s;
+        }
+
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: black;
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .preview-modal.show {
+            display: flex;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            max-height: 100%;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .share提示 {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <button id="chooseImageBtn" class="button">
+        <i class="fa fa-picture-o" aria-hidden="true"></i> 选择图片
+    </button>
+
+    <div class="image-container" id="imageContainer" style="display: none;">
+        <img id="mainImage" class="main-image" src="" alt="选择的图片">
+        <div class="grid-overlay" id="gridOverlay">
+            <!-- 九宫格将通过JS动态生成 -->
+        </div>
+    </div>
+
+    <canvas id="imageCanvas"></canvas>
+
+    <div class="share提示">
+        <p>分享这个九宫格切图工具给朋友</p>
+    </div>
+</div>
+
+<!-- 动作面板 -->
+<div class="mask" id="mask"></div>
+<div class="action-sheet" id="actionSheet">
+    <div class="action-sheet-title">选择图片来源</div>
+    <div class="action-item" data-index="0">
+        <i class="fa fa-camera" aria-hidden="true"></i> 拍照
+    </div>
+    <div class="action-item" data-index="1">
+        <i class="fa fa-image" aria-hidden="true"></i> 从相册选择
+    </div>
+    <div class="action-item" data-index="2">
+        <i class="fa fa-comments" aria-hidden="true"></i> 从文件选择
+    </div>
+    <div class="cancel-btn" id="cancelBtn">取消</div>
+</div>
+
+<!-- 提示框 -->
+<div class="toast" id="toast"></div>
+
+<!-- 预览模态框 -->
+<div class="preview-modal" id="previewModal">
+    <img id="previewImage" class="preview-image" src="" alt="预览图片">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 元素引用
+        const chooseImageBtn = document.getElementById('chooseImageBtn');
+        const actionSheet = document.getElementById('actionSheet');
+        const mask = document.getElementById('mask');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const actionItems = document.querySelectorAll('.action-item');
+        const imageContainer = document.getElementById('imageContainer');
+        const mainImage = document.getElementById('mainImage');
+        const gridOverlay = document.getElementById('gridOverlay');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const canvasCtx = imageCanvas.getContext('2d');
+        const toast = document.getElementById('toast');
+        const previewModal = document.getElementById('previewModal');
+        const previewImage = document.getElementById('previewImage');
+
+        // 数据
+        let canvasInfo = {
+            width: 0,
+            height: 0
+        };
+        let showInfo = {
+            width: 0,
+            height: 0
+        };
+        let systemInfo = {
+            width: window.innerWidth,
+            height: window.innerHeight
+        };
+        let imgSrc = "";
+
+        // 创建九宫格
+        function createGrid() {
+            gridOverlay.innerHTML = '';
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'grid-cell';
+                cell.textContent = i + 1;
+                cell.dataset.index = i;
+                cell.addEventListener('click', function() {
+                    previewGridCell(parseInt(this.dataset.index));
+                });
+                gridOverlay.appendChild(cell);
+            }
+        }
+
+        // 显示动作面板
+        chooseImageBtn.addEventListener('click', function() {
+            actionSheet.classList.add('show');
+            mask.classList.add('show');
+        });
+
+        // 隐藏动作面板
+        function hideActionSheet() {
+            actionSheet.classList.remove('show');
+            mask.classList.remove('show');
+        }
+
+        cancelBtn.addEventListener('click', hideActionSheet);
+        mask.addEventListener('click', hideActionSheet);
+
+        // 选择图片来源
+        actionItems.forEach(item => {
+            item.addEventListener('click', function() {
+                const index = parseInt(this.dataset.index);
+                hideActionSheet();
+
+                switch(index) {
+                    case 0:
+                        chooseFromCamera();
+                        break;
+                    case 1:
+                        chooseFromAlbum();
+                        break;
+                    case 2:
+                        chooseFromFiles();
+                        break;
+                }
+            });
+        });
+
+        // 从相机选择
+        function chooseFromCamera() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.capture = 'camera';
+            input.onchange = handleFileSelect;
+            input.click();
+        }
+
+        // 从相册选择
+        function chooseFromAlbum() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = handleFileSelect;
+            input.click();
+        }
+
+        // 从文件选择
+        function chooseFromFiles() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'image/*';
+            input.onchange = handleFileSelect;
+            input.click();
+        }
+
+        // 处理选择的文件
+        function handleFileSelect(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                imgSrc = event.target.result;
+                mainImage.src = imgSrc;
+
+                mainImage.onload = function() {
+                    // 计算图片显示尺寸
+                    const imgWidth = this.width;
+                    const imgHeight = this.height;
+
+                    // 确保图片在容器内显示
+                    const containerWidth = systemInfo.width * 0.9; // 90%的屏幕宽度
+                    let displayWidth, displayHeight;
+
+                    if (imgWidth > containerWidth) {
+                        const ratio = containerWidth / imgWidth;
+                        displayWidth = containerWidth;
+                        displayHeight = imgHeight * ratio;
+                    } else {
+                        displayWidth = imgWidth;
+                        displayHeight = imgHeight;
+                    }
+
+                    // 设置图片尺寸
+                    mainImage.style.width = displayWidth + 'px';
+                    mainImage.style.height = displayHeight + 'px';
+                    gridOverlay.style.width = displayWidth + 'px';
+                    gridOverlay.style.height = displayHeight + 'px';
+
+                    // 更新画布信息
+                    canvasInfo.width = imgWidth;
+                    canvasInfo.height = imgHeight;
+                    showInfo.width = displayWidth;
+                    showInfo.height = displayHeight;
+
+                    // 设置画布尺寸
+                    imageCanvas.width = imgWidth;
+                    imageCanvas.height = imgHeight;
+
+                    // 绘制图片到画布
+                    drawImageToCanvas(imgSrc);
+
+                    // 显示图片容器和创建九宫格
+                    imageContainer.style.display = 'block';
+                    createGrid();
+
+                    // 显示提示
+                    showToast('点击图片格子预览，右键可保存!');
+                };
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 绘制图片到画布
+        function drawImageToCanvas(src) {
+            const img = new Image();
+            img.onload = function() {
+                canvasCtx.drawImage(img, 0, 0, canvasInfo.width, canvasInfo.height);
+            };
+            img.src = src;
+        }
+
+        // 预览九宫格中的单元格
+        function previewGridCell(index) {
+            // 计算要裁剪的区域
+            const cellWidth = canvasInfo.width / 3;
+            const cellHeight = canvasInfo.height / 3;
+            const x = (index % 3) * cellWidth;
+            const y = Math.floor(index / 3) * cellHeight;
+
+            // 创建裁剪后的图像
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = cellWidth;
+            tempCanvas.height = cellHeight;
+            const tempCtx = tempCanvas.getContext('2d');
+
+            // 从主画布复制相应区域
+            tempCtx.drawImage(
+                imageCanvas,
+                x, y, cellWidth, cellHeight,
+                0, 0, cellWidth, cellHeight
+            );
+
+            // 显示预览
+            previewImage.src = tempCanvas.toDataURL('image/png');
+            previewModal.classList.add('show');
+        }
+
+        // 关闭预览
+        previewModal.addEventListener('click', function() {
+            previewModal.classList.remove('show');
+        });
+
+        // 显示提示信息
+        function showToast(message) {
+            toast.textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2000);
+        }
+
+        // 初始化
+        createGrid();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网站源码下载工具</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#3B82F6',
+                        secondary: '#10B981',
+                        dark: '#1E293B',
+                        light: '#F8FAFC'
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-custom {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-gray-50 text-dark min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-white shadow-md fixed w-full top-0 z-50 transition-custom">
+        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <i class="fa fa-download text-primary text-2xl"></i>
+                <h1 class="text-xl font-bold text-primary">网站源码下载工具</h1>
+            </div>
+            <nav>
+                <ul class="flex space-x-6">
+                    <li><a href="#" class="hover:text-primary transition-custom flex items-center"><i class="fa fa-home mr-1"></i> 首页</a></li>
+                    <li><a href="#about" class="hover:text-primary transition-custom flex items-center"><i class="fa fa-info-circle mr-1"></i> 关于</a></li>
+                    <li><a href="#faq" class="hover:text-primary transition-custom flex items-center"><i class="fa fa-question-circle mr-1"></i> 帮助</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 pt-24 pb-16">
+        <!-- 介绍部分 -->
+        <section class="text-center mb-12">
+            <h2 class="text-[clamp(1.8rem,4vw,2.8rem)] font-bold mb-4 text-shadow">轻松获取网站源码</h2>
+            <p class="text-gray-600 max-w-2xl mx-auto text-lg">输入网址，获取该网站的源码及相关资源，一键打包下载</p>
+        </section>
+
+        <!-- 工具部分 -->
+        <section class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12 transform hover:shadow-xl transition-custom">
+            <div class="mb-6">
+                <label for="url" class="block text-sm font-medium text-gray-700 mb-2">输入网址</label>
+                <div class="flex">
+                    <span class="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-50 text-gray-500">
+                        <i class="fa fa-globe"></i>
+                    </span>
+                    <input 
+                        type="url" 
+                        id="url" 
+                        placeholder="https://www.example.com" 
+                        class="flex-grow px-4 py-2 border border-gray-300 rounded-r-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-custom"
+                        value="https://www.qingqiqifu.com/bwl/"
+                    >
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm font-medium text-gray-700 mb-2">下载选项</label>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        <input type="checkbox" id="includeHtml" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="includeHtml" class="ml-2 text-sm text-gray-700">HTML 源码</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="includeCss" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="includeCss" class="ml-2 text-sm text-gray-700">CSS 样式</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="includeJs" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="includeJs" class="ml-2 text-sm text-gray-700">JavaScript 脚本</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="includeImages" checked class="w-4 h-4 text-primary focus:ring-primary border-gray-300 rounded">
+                        <label for="includeImages" class="ml-2 text-sm text-gray-700">图片资源</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <button id="downloadBtn" class="bg-primary hover:bg-primary/90 text-white font-medium py-3 px-8 rounded-lg shadow-md hover:shadow-lg transition-custom flex items-center justify-center mx-auto">
+                    <i class="fa fa-download mr-2"></i> 开始下载
+                </button>
+            </div>
+        </section>
+
+        <!-- 状态和结果部分 -->
+        <section id="resultSection" class="max-w-4xl mx-auto hidden">
+            <div class="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h3 class="text-xl font-semibold mb-4 flex items-center">
+                    <i class="fa fa-spinner fa-spin text-primary mr-2" id="statusSpinner"></i>
+                    <span id="statusText">正在处理...</span>
+                </h3>
+                
+                <div class="w-full bg-gray-200 rounded-full h-2.5 mb-4">
+                    <div id="progressBar" class="bg-primary h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+                
+                <div id="progressDetails" class="text-sm text-gray-600 space-y-2">
+                    <!-- 进度详情将在这里动态更新 -->
+                </div>
+            </div>
+
+            <div id="downloadResult" class="hidden bg-white rounded-xl shadow-lg p-6">
+                <div class="text-center mb-4">
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-secondary mb-4">
+                        <i class="fa fa-check text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800">下载完成！</h3>
+                    <p class="text-gray-600 mt-2">网站资源已成功打包</p>
+                </div>
+                
+                <div class="text-center">
+                    <a id="downloadLink" href="#" class="inline-flex items-center bg-secondary hover:bg-secondary/90 text-white font-medium py-2 px-6 rounded-lg shadow-md hover:shadow-lg transition-custom">
+                        <i class="fa fa-file-zip-o mr-2"></i> 下载打包文件
+                    </a>
+                </div>
+            </div>
+        </section>
+
+        <!-- 关于部分 -->
+        <section id="about" class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8 mb-12">
+            <h3 class="text-2xl font-bold mb-4 text-primary">关于本工具</h3>
+            <p class="text-gray-700 mb-4">
+                本工具旨在帮助用户获取网站的公开源码和相关资源。请注意，使用本工具下载的内容应遵守原网站的版权声明和使用条款，
+                不得用于任何非法用途或侵犯他人权益。
+            </p>
+            <p class="text-gray-700">
+                由于浏览器安全限制，本工具可能无法获取跨域资源或完整爬取复杂网站。对于需要完整备份的网站，
+                建议使用专业的网站爬取软件。
+            </p>
+        </section>
+
+        <!-- FAQ部分 -->
+        <section id="faq" class="max-w-3xl mx-auto bg-white rounded-xl shadow-lg p-6 md:p-8">
+            <h3 class="text-2xl font-bold mb-6 text-primary">常见问题</h3>
+            
+            <div class="space-y-4">
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-semibold text-lg mb-2">为什么有些网站无法下载？</h4>
+                    <p class="text-gray-600">由于浏览器的同源策略限制，本工具可能无法访问某些跨域资源。此外，一些网站可能设置了防爬措施。</p>
+                </div>
+                
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-semibold text-lg mb-2">下载的内容包含哪些部分？</h4>
+                    <p class="text-gray-600">工具会尝试下载HTML源码、关联的CSS样式表、JavaScript脚本和图片资源，具体取决于网站结构和设置。</p>
+                </div>
+                
+                <div class="border-b border-gray-200 pb-4">
+                    <h4 class="font-semibold text-lg mb-2">使用本工具是否合法？</h4>
+                    <p class="text-gray-600">使用本工具下载网站内容应遵守相关法律法规和网站的使用条款，不得侵犯他人知识产权或用于非法用途。</p>
+                </div>
+                
+                <div>
+                    <h4 class="font-semibold text-lg mb-2">为什么下载的网站无法正常显示？</h4>
+                    <p class="text-gray-600">许多网站使用相对路径、动态内容或服务器端渲染，直接下载的静态文件可能无法完全还原网站的功能和样式。</p>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="text-center">
+                <div class="flex items-center justify-center space-x-2 mb-4">
+                    <i class="fa fa-download text-primary text-xl"></i>
+                    <h2 class="text-lg font-bold">网站源码下载工具</h2>
+                </div>
+                <p class="text-gray-400 text-sm mb-4">
+                    请注意：使用本工具应遵守相关法律法规和网站的使用条款
+                </p>
+                <div class="text-gray-500 text-xs">
+                    &copy; 2023 网站源码下载工具 - 仅供学习和研究使用
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // 获取DOM元素
+        const downloadBtn = document.getElementById('downloadBtn');
+        const urlInput = document.getElementById('url');
+        const resultSection = document.getElementById('resultSection');
+        const statusText = document.getElementById('statusText');
+        const progressBar = document.getElementById('progressBar');
+        const progressDetails = document.getElementById('progressDetails');
+        const downloadResult = document.getElementById('downloadResult');
+        const downloadLink = document.getElementById('downloadLink');
+        const statusSpinner = document.getElementById('statusSpinner');
+        
+        // 监听下载按钮点击事件
+        downloadBtn.addEventListener('click', startDownload);
+        
+        // 开始下载流程
+        function startDownload() {
+            const url = urlInput.value.trim();
+            
+            // 验证URL
+            if (!url) {
+                alert('请输入网址');
+                return;
+            }
+            
+            if (!isValidUrl(url)) {
+                alert('请输入有效的网址，例如：https://www.example.com');
+                return;
+            }
+            
+            // 显示结果区域
+            resultSection.classList.remove('hidden');
+            downloadResult.classList.add('hidden');
+            
+            // 重置进度
+            progressBar.style.width = '0%';
+            statusText.textContent = '准备下载...';
+            progressDetails.innerHTML = '';
+            
+            // 滚动到结果区域
+            resultSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // 模拟下载过程（实际应用中需要后端支持）
+            simulateDownloadProcess(url);
+        }
+        
+        // 模拟下载过程
+        function simulateDownloadProcess(url) {
+            // 解析URL获取域名
+            const parsedUrl = new URL(url);
+            const domain = parsedUrl.hostname;
+            
+            // 模拟步骤
+            const steps = [
+                { text: `正在连接到 ${domain}`, progress: 10 },
+                { text: '获取HTML源码', progress: 30 },
+                { text: '解析CSS和JavaScript资源', progress: 50 },
+                { text: '下载图片资源', progress: 75 },
+                { text: '打包文件', progress: 90 },
+                { text: '准备下载', progress: 100 }
+            ];
+            
+            let stepIndex = 0;
+            
+            // 模拟进度更新
+            const interval = setInterval(() => {
+                if (stepIndex < steps.length) {
+                    const step = steps[stepIndex];
+                    statusText.textContent = step.text;
+                    progressBar.style.width = `${step.progress}%`;
+                    
+                    // 添加步骤到进度详情
+                    const stepElement = document.createElement('div');
+                    stepElement.className = 'flex justify-between';
+                    stepElement.innerHTML = `
+                        <span><i class="fa fa-check-circle text-secondary mr-1"></i>${step.text}</span>
+                        <span>${step.progress}%</span>
+                    `;
+                    progressDetails.appendChild(stepElement);
+                    
+                    stepIndex++;
+                } else {
+                    // 完成下载
+                    clearInterval(interval);
+                    statusSpinner.classList.remove('fa-spin');
+                    statusSpinner.className = 'fa fa-check text-secondary mr-2';
+                    statusText.textContent = '下载完成';
+                    
+                    // 显示下载链接
+                    setTimeout(() => {
+                        downloadResult.classList.remove('hidden');
+                        
+                        // 创建一个模拟的下载链接（实际应用中应该是服务器生成的文件）
+                        downloadLink.href = '#';
+                        downloadLink.onclick = function(e) {
+                            e.preventDefault();
+                            alert('在实际应用中，这里会下载包含网站源码的ZIP文件。由于浏览器安全限制，演示模式下无法真正下载跨域网站的内容。');
+                        };
+                    }, 1000);
+                }
+            }, 1000);
+        }
+        
+        // URL验证函数
+        function isValidUrl(url) {
+            try {
+                new URL(url);
+                return true;
+            } catch (e) {
+                return false;
+            }
+        }
+        
+        // 滚动时改变导航栏样式
+        window.addEventListener('scroll', () => {
+            const header = document.querySelector('header');
+            if (window.scrollY > 10) {
+                header.classList.add('py-2', 'shadow-lg');
+                header.classList.remove('py-3', 'shadow-md');
+            } else {
+                header.classList.add('py-3', 'shadow-md');
+                header.classList.remove('py-2', 'shadow-lg');
+            }
+        });
+    </script>
+</body>
+</html>

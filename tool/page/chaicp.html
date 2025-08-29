@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
+    <title>{$Think.config.web.chaicp.title}</title>
+    <meta name="applicable-device" content="pc,mobile"/>
+    <meta http-equiv="Cache-Control" content="no-transform"/>
+    <meta http-equiv="Cache-Control" content="no-siteapp"/>
+    <meta name="keywords" content="{$Think.config.web.chaicp.keywords}"/>
+    <meta name="description" content="{$Think.config.web.chaicp.description}"/>
+    <meta name="renderer" content="webkit"/>
+    <meta name="apple-mobile-web-app-capable" content="yes"/>
+    <link rel="icon" href="/favicon.ico" mce_href="/favicon.ico" type="image/x-icon"/>
+    <link href="../assets/css/bootstrap.min.css" rel="stylesheet" type="text/css"/>
+    <link href="../assets/css/tool.css" rel="stylesheet" type="text/css"/>
+    <!--[if lt IE 9]>
+    <script src="http://apps.bdimg.com/libs/html5shiv/3.7/html5shiv.min.js"></script>
+    <script src="http://apps.bdimg.com/libs/respond.js/1.4.2/respond.min.js"></script><![endif]-->
+    
+</head>
+<body><div id="header"></div>
+<div class="container">
+    <div class="row">
+        <div class="col-md-12">
+            <div class="accordion" id="accordion2">
+                <div class="accordion-group">
+                                            </li>
+                    </ul>
+                    <div class="panel">
+                        <form id="form1" class="form-horizontal" method="post">
+                            <div class="input-group mb5" style="width:85%"><input class="form-control" type="text"
+                                                                                  name="icp" id="icp" value="{$url}"
+                                                                                  placeholder="请输入您要查询的域名，如：{$_SERVER.HTTP_HOST}"/><span
+                                    class="input-group-btn"><button class="btn btn-success" type="submit" id="get_remote">查询ICP备案</button></span>
+                            </div>
+                            {if $icp}
+                            <div class="panel panel-default">
+                                <div class="panel-heading">
+                                    <h3 class="panel-title">
+                                        ICP备案查询结果，域名 <span class="greentag">{$url}</span> ICP备案信息
+                                    </h3>
+                                </div>
+                                    <table class="table table-bordered table-striped">
+                                        {if $code!='200'}
+                                        <tr><td><font color="red">{$icp.msg}</font></td></tr>
+                                        {else/}
+                                        {foreach $icp as $name=>$value}
+                                            <tr><td><span class="lx_name">{$name}</span><span class="lx_value">{$value}</span></td></tr>
+                                        {/foreach}
+                                        {/if}
+                                    </table>
+                            </div>
+                            {/if}
+                            <div class="form-group" style="margin-top:50px">
+                                <div class="col-sm-12"><p>最近查询： </p></div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div class="alert alert alert-success alert-dismissible"><h4>ICP备案查询</h4>
+                    <p>网站ICP备案查询，批量查询网站备案。查看网站是否已经备案及备案情况</p></div>
+                <div class="accordion-group"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="../assets/js/jquery-1.11.3.min.js" type="text/javascript"></script>
+<script src="../assets/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="../assets/js/tool.js" type="text/javascript"></script>
+
+<div id="footer"></div>
+</body>
+</html>

@@ -1,0 +1,800 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>WebDAV文件管理器</title>
+    <link rel="shortcut icon" href="logo.ico" type="image/x-icon">
+    <style>
+        /* 面包屑导航样式 */
+        .breadcrumb {
+            padding: 8px 15px;
+            margin-bottom: 15px;
+            background: #f5f5f5;
+            border-radius: 4px;
+            font-size: 18px;
+        }
+        h1 {
+            margin-top: 5px; /* 上边距，可根据需求修改 */
+            margin-bottom: 5px; /* 下边距，可根据需求修改 */
+        }
+        .breadcrumb a {
+            color: #007bff;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .breadcrumb a:hover {
+            text-decoration: none;
+        }
+        .breadcrumb span:last-child {
+            color: #6c757d;
+        }
+ 
+        /* 文件列表表格样式 */
+        .file-list {
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 100px; /* 为进度条留出空间 */
+        }
+        .file-header {
+            display: flex;
+            padding: 8px 15px;
+            background: #f8f9fa;
+            border-bottom: 2px solid #dee2e6;
+            font-weight: 500;
+        }
+        .file-item {
+            display: flex;
+            padding: 8px 15px;
+            border-bottom: 1px solid #dee2e6;
+            align-items: center;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .file-item.selected {
+            background-color: #e9f5ff;
+            border-left: 3px solid #007bff;
+        }
+        .file-item:hover {
+            background-color: #f8f9fa;
+        }
+        .file-name {
+            flex: 0 1 40%;
+            min-width: 200px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            padding-right: 15px;
+        }
+        .file-size {
+            flex: 0 1 15%;
+            min-width: 100px;
+            color: #6c757d;
+        }
+        .file-modified {
+            flex: 0 1 25%;
+            min-width: 160px;
+            color: #6c757d;
+        }
+        .file-actions {
+            flex: 0 0 200px;
+            text-align: right;
+            padding-left: 15px;
+        }
+ 
+        /* 按钮样式 */
+        button {
+            padding: 5px 15px;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+            margin: 0 2px;
+            transition: opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button.primary {
+            background: #007bff;
+        }
+        button.secondary {
+            background: #6c757d;
+        }
+        button.success {
+            background: #28a745;
+        }
+        button.danger {
+            background: #dc3545;
+        }
+        button:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+        }
+ 
+        /* 弹窗样式 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            z-index: 1000;
+        }
+        .modal input {
+            padding: 8px;
+            margin: 10px 0;
+            width: 300px;
+            display: block;
+        }
+        #serverUrl {
+            width: 96%; /* 修改地址输入框宽度为 300px */
+        }
+        .modal-buttons {
+            margin-top: 15px;
+            text-align: right;
+        }
+ 
+        /* 进度条样式 */
+        .progress-container {
+            position: fixed;
+            bottom: 0; /* 使容器紧贴页面底部 */
+            left: 0; /* 从页面最左边开始 */
+            right: 0; /* 延伸到页面最右边 */
+            width: 100%; /* 宽度为页面宽度 */
+            padding: 15px;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            border-radius: 0; /* 因为宽度为 100%，可去掉圆角 */
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+        .progress-item {
+            margin: 8px 0;
+        }
+        .progress-bar {
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            width: 0%;
+            height: 100%;
+            background: #007bff;
+            transition: width 0.3s ease;
+        }
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .upload-progress .progress-fill {
+            background: #28a745;
+        }
+ 
+        /* 基础样式 */
+        #loading {
+            display: none;
+            color: #666;
+            margin: 10px;
+        }
+        .error {
+            color: red;
+            margin-left: 10px;
+        }
+        input[type="text"], input[type="password"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+        input[type="text"]#serverUrl,
+        input[type="text"]#username,
+        input[type="password"]#password {
+            display: inline-block; /* 显示inline-block 隐藏none*/
+        }
+    </style>
+</head>
+<body>
+    <h1>WebDAV文件管理器</h1>
+ 
+    <!-- 操作栏 -->
+    <div>
+        <input type="text" id="serverUrl" placeholder="服务器地址"> <br>   
+        <input type="text" id="username" placeholder="用户名">
+        <input type="password" id="password" placeholder="密码">
+        <button class="primary">连接</button>
+        <input type="file" id="fileInput" style="display:none" multiple>
+        <button class="success">新建文件夹</button>
+        <button class="secondary">上传文件</button>
+        <button class="secondary" id="renameBtn" disabled>重命名</button>
+        <button class="danger" id="deleteBtn" disabled>删除</button>
+        <button class="secondary">刷新</button>
+        <span id="loading">加载中...</span>
+        <span class="error" id="errorMsg"></span>
+    </div>
+ 
+    <!-- 弹窗 -->
+    <div id="renameModal" class="modal">
+        <input type="text" id="newName" placeholder="输入新名称">
+        <div class="modal-buttons">
+            <button class="success">确认</button>
+            <button class="secondary">取消</button>
+        </div>
+    </div>
+ 
+    <div id="createFolderModal" class="modal">
+        <input type="text" id="folderName" placeholder="输入文件夹名称">
+        <div class="modal-buttons">
+            <button class="success">创建</button>
+            <button class="secondary">取消</button>
+        </div>
+    </div>
+ 
+    <!-- 文件列表容器 -->
+    <div id="fileList" style="margin-top:20px"></div>
+ 
+    <!-- 进度容器 -->
+    <div class="progress-container" id="progressContainer"></div>
+ 
+    <script>
+        // 配置信息
+        const builtInServerUrl = '';  // 留空使用用户输入 输入后自动连接
+        const builtInUsername = '';   // 留空使用用户输入
+        const builtInPassword = '';   // 留空使用用户输入
+ 
+        // 全局状态
+        let currentAuth = '';
+        let webdavRootUrl = '';
+        let currentPath = '';
+        let selectedItem = null;
+        const activeTransfers = new Map();
+        const folderCache = new Map(); // 新增：文件夹数据缓存
+        let isNavigating = false; // 防止重复双击
+ 
+        // 新增：保存表单数据到localStorage
+        function saveFormData() {
+            const formData = {
+                serverUrl: document.getElementById('serverUrl').value,
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            };
+            localStorage.setItem('webdavFormData', JSON.stringify(formData));
+        }
+ 
+        // 新增：加载保存的表单数据
+        function loadFormData() {
+            const savedData = localStorage.getItem('webdavFormData');
+            if (savedData) {
+                try {
+                    const formData = JSON.parse(savedData);
+                    document.getElementById('serverUrl').value = formData.serverUrl || '';
+                    document.getElementById('username').value = formData.username || '';
+                    document.getElementById('password').value = formData.password || '';
+                } catch (e) {
+                    console.error('加载保存的数据失败:', e);
+                }
+            }
+        }
+ 
+        // 修改后的connect函数
+        async function connect() {
+            const serverInput = document.getElementById('serverUrl').value || builtInServerUrl;
+            const username = document.getElementById('username').value || builtInUsername;
+            const password = document.getElementById('password').value || builtInPassword;
+ 
+            try {
+                // 处理可能的URL格式问题
+                if (!serverInput.startsWith('http://') && !serverInput.startsWith('https://')) {
+                    throw new Error('服务器地址必须以http://或https://开头');
+                }
+                webdavRootUrl = new URL(serverInput).href;
+            } catch (e) {
+                showError(`服务器地址无效: ${e.message}`);
+                return;
+            }
+ 
+            currentAuth = btoa(`${username}:${password}`);
+ 
+            try {
+                await fetchDirectory(webdavRootUrl);
+                // 点击连接时保存输入信息
+                saveFormData();
+            } catch (e) {
+                showError(`连接失败: ${e.message}`);
+            }
+        }
+ 
+        // 核心功能函数（修复路径处理）
+        async function fetchDirectory(path) {
+            if (!path.endsWith('/')) path += '/';
+ 
+            if (folderCache.has(path)) { // 检查缓存
+                const items = folderCache.get(path);
+                renderFileList(items, path);
+                return;
+            }
+ 
+            document.getElementById('loading').style.display = 'inline';
+            try {
+                const response = await fetch(path, {
+                    method: 'PROPFIND',
+                    headers: {
+                        'Authorization': `Basic ${currentAuth}`,
+                        'Depth': '1',
+                        'Content-Type': 'text/xml; charset=utf-8'
+                    },
+                    body: `<?xml version="1.0"?>
+                        <d:propfind xmlns:d="DAV:">
+                            <d:prop>
+                                <d:displayname/>
+                                <d:getcontentlength/>
+                                <d:getlastmodified/>
+                                <d:resourcetype/>
+                            </d:prop>
+                        </d:propfind>`
+                });
+ 
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+ 
+                const data = await response.text();
+                const items = parseResponse(data, path)
+                   .filter(item => item.href !== path && !item.href.endsWith('.DS_Store/'));
+ 
+                folderCache.set(path, items); // 缓存数据
+                renderFileList(items, path);
+            } catch (e) {
+                showError(`操作失败: ${e.message}`);
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+ 
+        function parseResponse(xmlText, baseUrl) {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(xmlText, "text/xml");
+            return Array.from(doc.getElementsByTagNameNS('DAV:', 'response')).map(item => {
+                const href = item.getElementsByTagNameNS('DAV:', 'href')[0].textContent;
+                const fullHref = new URL(href, baseUrl).href;
+                const isDir = item.getElementsByTagNameNS('DAV:', 'collection').length > 0;
+ 
+                const propStat = item.getElementsByTagNameNS('DAV:', 'propstat')[0];
+                const props = propStat.getElementsByTagNameNS('DAV:', 'prop')[0];
+ 
+                const pathname = new URL(fullHref).pathname;
+                const cleanPath = decodeURIComponent(pathname).replace(/\/$/, '');
+                const fileName = cleanPath.split('/').pop() || '';
+ 
+                return {
+                    href: fullHref,
+                    name: fileName,
+                    type: isDir ? 'directory' : 'file',
+                    size: props.getElementsByTagNameNS('DAV:', 'getcontentlength')[0]?.textContent || null,
+                    modified: props.getElementsByTagNameNS('DAV:', 'getlastmodified')[0]?.textContent || null
+                };
+            });
+        }
+ 
+        // 界面渲染
+        function renderFileList(items, path) {
+            currentPath = path;
+            const container = document.getElementById('fileList');
+ 
+            container.innerHTML = `
+                <div class="file-list">
+                    ${generateBreadcrumb(path)}
+                    <div class="file-header">
+                        <div class="file-name">名称</div>
+                        <div class="file-size">大小</div>
+                        <div class="file-modified">修改时间</div>
+                        <div class="file-actions">操作</div>
+                    </div>
+                    ${items.map(item => `
+                        <div class="file-item ${selectedItem === item.href ? 'selected' : ''}"
+                             
+                             ${item.type === 'directory' ? `onmouseover="preloadDirectory('${item.href}')"` : ''}>
+                            <div class="file-name" ${item.type === 'directory' ? `ondblclick="enterDirectory('${item.href}')"` : ''}>
+                                ${item.type === 'directory' ? '&#128193;' : '&#128196;'}
+                                ${item.name}
+                            </div>
+                            <div class="file-size">${formatSize(item.size)}</div>
+                            <div class="file-modified">${formatDate(item.modified)}</div>
+                            <div class="file-actions">
+                                ${item.type === 'file' ?
+                                    `<button class="secondary">下载</button>` : ''}
+                            </div>
+                        </div>
+                    `).join('')}
+                    ${items.length === 0 ? `
+                        <div class="file-item" style="justify-content:center; color:#6c757d;">
+                            空目录
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+ 
+            document.getElementById('renameBtn').disabled = !selectedItem;
+            document.getElementById('deleteBtn').disabled = !selectedItem;
+        }
+ 
+        function toggleSelection(href) {
+            selectedItem = selectedItem === href ? null : href;
+            fetchDirectory(currentPath);
+        }
+ 
+        function generateBreadcrumb(path) {
+            const base = new URL(webdavRootUrl);
+            // 规范化基础路径：解码、确保以斜杠结尾
+            const basePath = decodeURIComponent(base.pathname).replace(/\/?$/, '/');
+            // 处理当前路径
+            const current = new URL(path);
+            const currentPathname = decodeURIComponent(current.pathname).replace(/\/?$/, '/');
+ 
+            // 获取相对路径部分
+            const relativePath = currentPathname.slice(basePath.length);
+            const segments = relativePath.split('/').filter(Boolean);
+ 
+            return `<div class="breadcrumb">
+                <a>&#127968;主页</a>
+                ${segments.length > 0 ? ' / ' : ''}
+                ${segments.map((seg, i) => {
+                    const urlSegments = segments.slice(0, i+1);
+                    const url = new URL(basePath + urlSegments.join('/') + '/', base.href);
+                    return i === segments.length-1 ?
+                        `<span>${decodeURIComponent(seg)}</span>` :
+                        `<a>${decodeURIComponent(seg)}</a> / `;
+                }).join('')}
+            </div>`;
+        }
+ 
+        // 工具函数
+        function formatSize(bytes) {
+            if (!bytes) return '-';
+            const units = ['B', 'KB', 'MB', 'GB'];
+            let size = parseFloat(bytes);
+            for (let unit of units) {
+                if (size < 1024) return `${size.toFixed(1)} ${unit}`;
+                size /= 1024;
+            }
+            return `${size.toFixed(1)} GB`;
+        }
+ 
+        function formatDate(dateStr) {
+            try {
+                return new Date(dateStr).toLocaleString('zh-CN');
+            } catch {
+                return dateStr;
+            }
+        }
+ 
+        function showError(message) {
+            document.getElementById('errorMsg').textContent = message;
+            setTimeout(() => document.getElementById('errorMsg').textContent = '', 3000);
+        }
+ 
+        // 核心操作
+        async function connect() {
+            const server = document.getElementById('serverUrl').value || builtInServerUrl;
+            const username = document.getElementById('username').value || builtInUsername;
+            const password = document.getElementById('password').value || builtInPassword;
+ 
+            currentAuth = btoa(`${username}:${password}`);
+            webdavRootUrl = new URL(server).href;
+ 
+            try {
+                await fetchDirectory(webdavRootUrl);
+                // 点击连接时保存输入信息
+                saveFormData();
+            } catch (e) {
+                showError(`连接失败: ${e.message}`);
+            }
+        }
+ 
+        async function enterDirectory(path) {
+            if (isNavigating) return;
+            if (!path.endsWith('/')) path += '/';
+            try {
+                isNavigating = true;
+                document.getElementById('loading').style.display = 'inline';
+                selectedItem = null;
+                await fetchDirectory(path);
+                document.getElementById('fileList').scrollIntoView({ behavior: 'smooth' });
+            } catch (e) {
+                showError(`进入目录失败: ${e.message}`);
+            } finally {
+                isNavigating = false;
+                document.getElementById('loading').style.display = 'none';
+            }
+        }
+ 
+        // 新增：预加载文件夹数据
+        async function preloadDirectory(path) {
+            if (!path.endsWith('/')) path += '/';
+            if (!folderCache.has(path)) {
+                try {
+                    const response = await fetch(path, {
+                        method: 'PROPFIND',
+                        headers: {
+                            'Authorization': `Basic ${currentAuth}`,
+                            'Depth': '1',
+                            'Content-Type': 'text/xml; charset=utf-8'
+                        },
+                        body: `<?xml version="1.0"?>
+                            <d:propfind xmlns:d="DAV:">
+                                <d:prop>
+                                    <d:displayname/>
+                                    <d:getcontentlength/>
+                                    <d:getlastmodified/>
+                                    <d:resourcetype/>
+                                </d:prop>
+                            </d:propfind>`
+                    });
+ 
+                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+ 
+                    const data = await response.text();
+                    const items = parseResponse(data, path)
+                       .filter(item => item.href !== path && !item.href.endsWith('.DS_Store/'));
+ 
+                    folderCache.set(path, items);
+                } catch (e) {
+                    console.error(`预加载失败: ${e.message}`);
+                }
+            }
+        }
+ 
+        // 文件操作
+        async function deleteItem() {
+            if (!selectedItem || !confirm('确定要永久删除此项目吗？')) return;
+ 
+            try {
+                const response = await fetch(selectedItem, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Basic ${currentAuth}` }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                selectedItem = null;
+                folderCache.delete(currentPath); // 删除缓存
+                await fetchDirectory(currentPath);
+            } catch (e) {
+                showError(`删除失败: ${e.message}`);
+            }
+        }
+ 
+        function showRenameModal() {
+            if (!selectedItem) return;
+            document.getElementById('newName').value = decodeURIComponent(
+                selectedItem.split('/').pop().replace(/%20/g, ' ')
+            );
+            document.getElementById('renameModal').style.display = 'block';
+        }
+ 
+        async function confirmRename() {
+            if (!selectedItem) return;
+            const newName = encodeURIComponent(document.getElementById('newName').value);
+            const oldUrl = new URL(selectedItem);
+            const newUrl = new URL(newName, oldUrl).href;
+ 
+            try {
+                const response = await fetch(selectedItem, {
+                    method: 'MOVE',
+                    headers: {
+                        'Authorization': `Basic ${currentAuth}`,
+                        'Destination': newUrl,
+                        'Overwrite': 'F'
+                    }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                selectedItem = null;
+                folderCache.delete(currentPath); // 删除缓存
+                await fetchDirectory(currentPath);
+                closeModal();
+            } catch (e) {
+                showError(`重命名失败: ${e.message}`);
+            }
+        }
+ 
+        function showCreateFolderModal() {
+            document.getElementById('createFolderModal').style.display = 'block';
+        }
+ 
+        async function confirmCreateFolder() {
+            const folderName = encodeURIComponent(document.getElementById('folderName').value);
+            const newUrl = new URL(folderName + '/', currentPath).href;
+ 
+            try {
+                const response = await fetch(newUrl, {
+                    method: 'MKCOL',
+                    headers: { 'Authorization': `Basic ${currentAuth}` }
+                });
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                folderCache.delete(currentPath); // 删除缓存
+                await fetchDirectory(currentPath);
+                closeModal();
+            } catch (e) {
+                showError(`创建失败: ${e.message}`);
+            }
+        }
+ 
+        // 上传下载功能
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+ 
+            files.forEach(file => {
+                uploadFile(file);
+            });
+        });
+ 
+        function uploadFile(file) {
+            const uploadId = `upload-${Date.now()}`;
+            const url = new URL(encodeURIComponent(file.name), currentPath).href;
+ 
+            // 创建进度元素
+            const progressElement = document.createElement('div');
+            progressElement.className = 'progress-item upload-progress';
+            progressElement.innerHTML = `
+                <div class="progress-info">
+                    <span>${file.name}</span>
+                    <span class="progress-text">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="fill-${uploadId}"></div>
+                </div>
+            `;
+            document.getElementById('progressContainer').appendChild(progressElement);
+ 
+            const xhr = new XMLHttpRequest();
+            xhr.open('PUT', url);
+            xhr.setRequestHeader('Authorization', `Basic ${currentAuth}`);
+            xhr.setRequestHeader('Content-Type', 'application/octet-stream');
+ 
+            xhr.upload.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    updateProgress(uploadId, percent);
+                }
+            };
+ 
+            xhr.onload = function() {
+                if (xhr.status === 201 || xhr.status === 200) {
+                    folderCache.delete(currentPath); // 删除缓存
+                    fetchDirectory(currentPath);
+                    removeProgress(uploadId);
+                }
+            };
+ 
+            xhr.onerror = function() {
+                showError(`上传失败: ${xhr.statusText}`);
+                removeProgress(uploadId);
+            };
+ 
+            activeTransfers.set(uploadId, xhr);
+            xhr.send(file);
+        }
+ 
+        function downloadFile(url) {
+            const downloadId = `download-${Date.now()}`;
+            const fileName = decodeURIComponent(url.split('/').pop());
+            // 新增刷新功能函数
+            function refreshCurrentDirectory() {
+                if (!currentAuth) {
+                    showError('请先连接到服务器');
+                    return;
+                }
+                if (!currentPath) {
+                    showError('当前路径不可用');
+                    return;
+                }
+                // 清除选中状态并刷新
+                selectedItem = null;
+                fetchDirectory(currentPath);
+            }
+ 
+            // 创建进度元素
+            const progressElement = document.createElement('div');
+            progressElement.className = 'progress-item';
+            progressElement.innerHTML = `
+                <div class="progress-info">
+                    <span>${fileName}</span>
+                    <span class="progress-text">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="fill-${downloadId}"></div>
+                </div>
+            `;
+            document.getElementById('progressContainer').appendChild(progressElement);
+ 
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', url);
+            xhr.setRequestHeader('Authorization', `Basic ${currentAuth}`);
+            xhr.responseType = 'blob';
+ 
+            xhr.onprogress = function(e) {
+                if (e.lengthComputable) {
+                    const percent = Math.round((e.loaded / e.total) * 100);
+                    updateProgress(downloadId, percent);
+                }
+            };
+ 
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    const blob = xhr.response;
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(blob);
+                    link.download = fileName;
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                    removeProgress(downloadId);
+                }
+            };
+ 
+            xhr.onerror = function() {
+                showError(`下载失败: ${xhr.statusText}`);
+                removeProgress(downloadId);
+            };
+ 
+            activeTransfers.set(downloadId, xhr);
+            xhr.send();
+        }
+ 
+        function updateProgress(id, percent) {
+            const fill = document.getElementById(`fill-${id}`);
+            const text = fill?.parentElement?.previousElementSibling?.querySelector('.progress-text');
+            if (fill) fill.style.width = `${percent}%`;
+            if (text) text.textContent = `${percent}%`;
+        }
+ 
+        function removeProgress(id) {
+            const element = document.querySelector(`#fill-${id}`)?.closest('.progress-item');
+            if (element) element.remove();
+            activeTransfers.delete(id);
+        }
+ 
+        // 通用函数
+        function closeModal() {
+            document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
+            document.getElementById('folderName').value = '';
+            document.getElementById('newName').value = '';
+        }
+ 
+        // 初始化（添加自动连接）
+        window.onload = () => {
+            loadFormData(); // 先加载保存的数据
+ 
+            // 如果有内置配置，则覆盖对应字段
+            if (builtInServerUrl) {
+                document.getElementById('serverUrl').value = builtInServerUrl;
+            }
+            if (builtInUsername) {
+                document.getElementById('username').value = builtInUsername;
+            }
+            if (builtInPassword) {
+                document.getElementById('password').value = builtInPassword;
+            }
+ 
+            // 自动连接的逻辑
+            const hasBuiltInConfig = builtInServerUrl || builtInUsername || builtInPassword;
+            if (hasBuiltInConfig) {
+                // 使用内置配置自动连接
+                setTimeout(() => connect(), 500);
+            } else {
+                // 检查localStorage是否有数据
+                const savedData = localStorage.getItem('webdavFormData');
+                if (savedData) {
+                    setTimeout(() => connect(), 500);
+                }
+            }
+        };
+    </script>
+</body>
+</html>

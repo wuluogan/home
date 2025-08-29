@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>木鱼</title>
+    <style>
+        @keyframes textMove {
+            from {
+                top: 100%;
+                opacity: 1;
+            }
+            to {
+                top: 18%;
+                opacity: 0;
+            }
+        }
+        @keyframes countTipMove {
+            from {
+                top: -200rpx;
+                opacity: 1;
+            }
+            to {
+                top: 0;
+                opacity: 0;
+            }
+        }
+        .fish {
+            font-family: geetype, sans-serif;
+            background-color: #000;
+            height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+        .count {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            flex: 2;
+        }
+        .count-num {
+            font-size: 140rpx;
+            color: #fff;
+        }
+        .count-label {
+            font-size: 60rpx;
+            color: #444;
+        }
+        .audio {
+            display: none;
+        }
+        .box {
+            width: 100%;
+            flex: 5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            position: relative;
+        }
+        .box-tip {
+            width: 100%;
+            height: 200rpx;
+            position: absolute;
+            bottom: 75%;
+            right: 20rpx;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            align-items: flex-end;
+            flex-direction: column;
+        }
+        .box-tip-item {
+            position: absolute;
+            font-size: 30rpx;
+            margin: 0 20rpx;
+            animation: textMove 1.5s;
+            opacity: 0;
+            color: #fff;
+        }
+        .box-fish {
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            cursor: pointer;
+        }
+        .box-fish.active {
+            transform: scale(0.95);
+            transition: all 0.1s cubic-bezier(0.5, 0.35, 0.15, 1.4);
+        }
+        .footer {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .footer-btn {
+            font-size: 40rpx;
+            color: #fff;
+            margin: 0 20rpx 15rpx;
+            cursor: pointer;
+            border-radius: 20rpx;
+            border: 1px solid #fff;
+            padding: 10rpx 20rpx;
+        }
+        .footer-btn:active {
+            background-color: #fff;
+            color: #000;
+        }
+        .message {
+            font-size: 40rpx;
+            text-align: center;
+            padding: 50rpx 20rpx;
+        }
+
+        /* 适配不同屏幕的rpx转换 */
+        @media (min-width: 768px) {
+            html {
+                font-size: 28px;
+            }
+        }
+        @media (max-width: 767px) {
+            html {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="fish">
+    <div class="count">
+        <div class="count-num" id="countNum">0</div>
+        <div class="count-label" id="countLabel">功德</div>
+    </div>
+    <div class="box">
+        <div class="box-tip" id="tipsContainer"></div>
+        <div class="box-fish" id="fish" onclick="clickMuyu()">
+            <img src="./svg.png" alt="木鱼图片" style="width: 380rpx;height: 300rpx;">
+        </div>
+    </div>
+    <div class="footer">
+        <div class="footer-btn" id="immerseBtn" onclick="toggleImmerse()">沉浸模式</div>
+        <div class="footer-btn" id="autoBtn" onclick="toggleAuto()">自动敲鱼</div>
+        <div class="footer-btn" onclick="reload()">重置</div>
+    </div>
+</div>
+
+<script>
+    // 音频元素
+    const audio = new Audio();
+    const bgm = new Audio();
+
+    // 应用状态
+    let state = {
+        tabIndex: 0,
+        tabList: [
+            {
+                type: '功德',
+                tips: '功德 +1 佛主保佑你'
+            },
+            {
+                type: '抗疫',
+                tips: '阳性 -1 健健康康'
+            }
+        ],
+        tipsList: [],
+        isImmerse: false,
+        isAuto: false,
+        interval: null,
+        fishActive: false,
+        visible: false,
+        countNum: localStorage.getItem('num') || 0
+    };
+
+    // DOM元素
+    const countNumEl = document.getElementById('countNum');
+    const countLabelEl = document.getElementById('countLabel');
+    const tipsContainer = document.getElementById('tipsContainer');
+    const fishEl = document.getElementById('fish');
+    const immerseBtn = document.getElementById('immerseBtn');
+    const autoBtn = document.getElementById('autoBtn');
+
+    // 初始化
+    function init() {
+        countNumEl.textContent = state.countNum;
+        countLabelEl.textContent = state.tabList[state.tabIndex].type;
+
+        // 初始化音频
+        audio.src = './sound.mp3';
+        bgm.src = './bgm.mp3';
+        bgm.loop = true;
+    }
+
+    // 播放背景音乐
+    function bgmPlay() {
+        bgm.play().catch(e => console.log('背景音乐播放失败:', e));
+    }
+
+    // 暂停背景音乐
+    function bgmPause() {
+        bgm.pause();
+    }
+
+    // 播放点击音效
+    function audioPlay() {
+        audio.currentTime = 0;
+        audio.play().catch(e => console.log('音效播放失败:', e));
+    }
+
+    // 切换沉浸模式
+    function toggleImmerse() {
+        state.isImmerse = !state.isImmerse;
+        immerseBtn.textContent = state.isImmerse ? '取消沉浸' : '沉浸模式';
+
+        if (state.isImmerse) {
+            bgmPlay();
+        } else {
+            bgmPause();
+        }
+    }
+
+    // 切换自动模式
+    function toggleAuto() {
+        state.isAuto = !state.isAuto;
+        autoBtn.textContent = state.isAuto ? '取消自动' : '自动敲鱼';
+
+        if (state.isAuto) {
+            state.interval = setInterval(clickMuyu, 2000);
+        } else {
+            clearInterval(state.interval);
+        }
+    }
+
+    // 点击木鱼
+    function clickMuyu() {
+        state.countNum++;
+        countNumEl.textContent = state.countNum;
+
+        state.fishActive = true;
+        fishEl.classList.add('active');
+
+        // 添加提示信息
+        const newTip = {
+            label: state.tabList[state.tabIndex].tips,
+            index: state.countNum
+        };
+        state.tipsList.push(newTip);
+
+        // 保存到本地存储
+        localStorage.setItem('num', state.countNum);
+
+        // 播放音效
+        audioPlay();
+
+        // 创建并添加提示元素
+        const tipEl = document.createElement('div');
+        tipEl.className = 'box-tip-item';
+        tipEl.textContent = newTip.label;
+        tipEl.style.animationDelay = `${state.tipsList.length * 0.1}s`;
+        tipEl.dataset.index = newTip.index;
+        tipsContainer.appendChild(tipEl);
+
+        // 300ms后移除活跃状态
+        setTimeout(() => {
+            state.fishActive = false;
+            fishEl.classList.remove('active');
+
+            // 保持最多5条提示
+            if (state.tipsList.length > 5) {
+                state.tipsList.shift();
+                const oldestTip = tipsContainer.querySelector('.box-tip-item');
+                if (oldestTip) tipsContainer.removeChild(oldestTip);
+            }
+        }, 300);
+    }
+
+    // 重置
+    function reload() {
+        localStorage.setItem('num', 0);
+        state.countNum = 0;
+        countNumEl.textContent = 0;
+        state.tipsList = [];
+        tipsContainer.innerHTML = '';
+
+        // 清除自动模式
+        if (state.isAuto) {
+            toggleAuto();
+        }
+
+        // 取消沉浸模式
+        if (state.isImmerse) {
+            toggleImmerse();
+        }
+    }
+
+    // 初始化应用
+    init();
+</script>
+</body>
+</html>

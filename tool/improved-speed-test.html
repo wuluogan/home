@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网速测试工具</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+    <style>
+        /* 保持原有样式不变 */
+        body {
+            background-color: #eee;
+            color: #757575;
+            font-size: 16px;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            padding: 0;
+        }
+
+        .top {
+            background-color: #4ac05e;
+            box-sizing: border-box;
+            color: #fff;
+            font-size: 40px;
+            font-weight: 700;
+            height: 120px;
+            line-height: 120px;
+            text-align: center;
+            width: 100%;
+        }
+
+        .bar {
+            background-color: #fff;
+            font-size: 16px;
+            padding: 0 15px;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            height: 40px;
+            line-height: 40px;
+            margin-top: 8px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .bar1 {
+            font-size: 14px;
+            text-align: center;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            box-sizing: border-box;
+            height: 40px;
+            line-height: 40px;
+            margin-top: 8px;
+            overflow: hidden;
+            width: 100%;
+        }
+
+        .bar:active {
+            box-shadow: 0 1px 5px rgba(0, 0, 0, 0.3);
+        }
+
+        .button {
+            background-color: #42bd56;
+            color: #fff;
+            border-radius: 50px;
+            box-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+            font-size: 16px;
+            height: 50px;
+            line-height: 50px;
+            margin: 15px;
+            text-align: center;
+            width: calc(100% - 30px);
+            cursor: pointer;
+            transition: background-color 0.3s;
+            border: none;
+        }
+
+        .button:hover, .button:active {
+            background-color: #02cb6d;
+            color: #fff;
+        }
+
+        .loading-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            display: none;
+        }
+
+        .loading-content {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: #4ac05e;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            z-index: 1001;
+            display: none;
+            max-width: 80%;
+        }
+
+        .toast.show {
+            display: block;
+            animation: fadeInOut 3s;
+        }
+
+        @keyframes fadeInOut {
+            0% { opacity: 0; }
+            20% { opacity: 1; }
+            80% { opacity: 1; }
+            100% { opacity: 0; }
+        }
+
+        .error-details {
+            font-size: 14px;
+            margin-top: 5px;
+            color: #ffcccc;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="after-navber">
+        <div>
+            <div class="top">
+                <span id="speed">0</span>
+                <span style="font-size: 18px">kb/s</span>
+            </div>
+            <div class="bar">你的网速为：<span id="speedAsMb">0</span> mb/s</div>
+            <div class="bar">速度相当于：<span id="speedAsType">0M宽带</span></div>
+            <div class="bar">设备品牌：<span id="deviceBrand">未知</span></div>
+            <div class="bar">设备型号：<span id="deviceModel">未知</span></div>
+            <div class="bar">系统版本：<span id="systemVersion">未知</span></div>
+            <div class="bar">网络类型：<span id="networkType">未知</span></div>
+            <div class="bar">浏览器版本：<span id="browserVersion">未知</span></div>
+            <div class="bar1">请多测试几次较为准确</div>
+            <button id="startTestBtn" class="button">
+                <i class="fa fa-refresh" aria-hidden="true"></i> 重新测速
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 加载中模态框 -->
+<div class="loading-modal" id="loadingModal">
+    <div class="loading-content">
+        <div class="spinner"></div>
+        <div id="loadingText">测速中....</div>
+    </div>
+</div>
+
+<!-- 提示框 -->
+<div class="toast" id="toast">
+    <div id="toastMessage"></div>
+    <div id="toastDetails" class="error-details"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // 元素引用
+        const speedElement = document.getElementById('speed');
+        const speedAsMbElement = document.getElementById('speedAsMb');
+        const speedAsTypeElement = document.getElementById('speedAsType');
+        const deviceBrandElement = document.getElementById('deviceBrand');
+        const deviceModelElement = document.getElementById('deviceModel');
+        const systemVersionElement = document.getElementById('systemVersion');
+        const networkTypeElement = document.getElementById('networkType');
+        const browserVersionElement = document.getElementById('browserVersion');
+        const startTestBtn = document.getElementById('startTestBtn');
+        const loadingModal = document.getElementById('loadingModal');
+        const loadingText = document.getElementById('loadingText');
+        const toast = document.getElementById('toast');
+        const toastMessage = document.getElementById('toastMessage');
+        const toastDetails = document.getElementById('toastDetails');
+
+        // 数据 - 添加了多个备用测试资源
+        let speed = 0;
+        let speedAsMb = 0;
+        let speedAsType = "0M宽带";
+        // 多个测试资源，包含不同CDN和文件大小
+        const testResources = [
+            { url: "https://apps.bdimg.com/libs/angular.js/1.4.6/angular.min.js", size: 143 },  // 百度CDN
+            { url: "https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.production.min.js", size: 42 },  // jsDelivr CDN
+            { url: "https://code.jquery.com/jquery-3.6.0.min.js", size: 87 }  // jQuery CDN
+        ];
+        const maxRetries = 2;  // 最大重试次数
+        let currentRetry = 0;  // 当前重试次数
+        let currentResourceIndex = 0;  // 当前使用的资源索引
+
+        const speedTypeList = [
+            { name: "0M宽带", min: 0, max: 77 },
+            { name: "1M宽带", min: 77, max: 128 },
+            { name: "2M宽带", min: 154, max: 256 },
+            { name: "3M宽带", min: 231, max: 384 },
+            { name: "4M宽带", min: 307, max: 512 },
+            { name: "6M宽带", min: 462, max: 620 },
+            { name: "8M宽带", min: 614, max: 1024 },
+            { name: "12M宽带", min: 922, max: 1536 },
+            { name: "20M宽带", min: 1537, max: 2560 },
+            { name: "30M宽带", min: 2561, max: 3840 },
+            { name: "50M宽带", min: 3841, max: 6400 },
+            { name: "100M宽带", min: 7680, max: 12800 },
+        ];
+
+        // 初始化
+        startSpeedMeasure();
+
+        // 绑定事件
+        startTestBtn.addEventListener('click', startSpeedMeasure);
+
+        // 开始测速 - 重置重试计数器
+        function startSpeedMeasure() {
+            currentRetry = 0;
+            currentResourceIndex = 0;
+            getSystemInfo();
+            getSpeedWithRetry();
+        }
+
+        // 带重试机制的测速函数
+        function getSpeedWithRetry() {
+            if (currentRetry > maxRetries) {
+                // 超过最大重试次数，显示最终错误
+                loadingModal.style.display = 'none';
+                showToast(
+                    '多次测速失败',
+                    '请检查网络连接或稍后再试。可能是当前网络不稳定或测试资源暂时不可用。'
+                );
+                return;
+            }
+
+            // 选择当前要使用的资源
+            const currentResource = testResources[currentResourceIndex];
+
+            // 更新加载文本，显示当前重试次数
+            if (currentRetry > 0) {
+                loadingText.textContent = `测速中（重试 ${currentRetry}/${maxRetries}）....`;
+            } else {
+                loadingText.textContent = '测速中....';
+            }
+
+            // 显示加载中
+            loadingModal.style.display = 'flex';
+
+            // 执行测速
+            getSpeed(currentResource.url, currentResource.size)
+                .then(speed => {
+                    // 测速成功
+                    loadingModal.style.display = 'none';
+                    speedElement.textContent = speed;
+                    speedConversion(speed);
+                    showToast('测速成功');
+                })
+                .catch(error => {
+                    // 测速失败，准备重试
+                    currentRetry++;
+                    currentResourceIndex = (currentResourceIndex + 1) % testResources.length;
+
+                    // 显示错误信息，但不关闭加载框，继续重试
+                    showToast(
+                        `测速失败，正在重试（${currentRetry}/${maxRetries}）`,
+                        error.message
+                    );
+
+                    // 短暂延迟后重试
+                    setTimeout(getSpeedWithRetry, 1000);
+                });
+        }
+
+        // 测速函数 - 返回Promise便于处理重试
+        function getSpeed(url, size) {
+            return new Promise((resolve, reject) => {
+                const startTime = new Date();
+
+                // 创建一个新的XMLHttpRequest
+                const xhr = new XMLHttpRequest();
+                xhr.open('GET', url, true);
+                xhr.timeout = 10000;  // 设置10秒超时
+
+                xhr.onload = function() {
+                    if (xhr.status === 200) {
+                        const endTime = new Date();
+                        const duration = endTime - startTime;
+
+                        // 计算速度 (KB/s)
+                        if (duration <= 0) {
+                            reject(new Error('测速时间过短，无法计算'));
+                            return;
+                        }
+
+                        const measuredSpeed = Math.round((1000 * size) / duration);
+                        resolve(measuredSpeed);
+                    } else {
+                        reject(new Error(`HTTP错误: 状态码 ${xhr.status}`));
+                    }
+                };
+
+                xhr.ontimeout = function() {
+                    reject(new Error('请求超时，请检查网络'));
+                };
+
+                xhr.onerror = function() {
+                    reject(new Error('网络错误，无法连接到测试服务器'));
+                };
+
+                xhr.send();
+            });
+        }
+
+        // 获取系统信息
+        function getSystemInfo() {
+            // 获取网络类型
+            if (navigator.connection) {
+                networkTypeElement.textContent = navigator.connection.effectiveType || '未知';
+
+                // 网络类型检测，如果是离线状态提前提示
+                if (navigator.connection.effectiveType === 'unknown' && !navigator.onLine) {
+                    showToast('网络连接已断开', '请检查您的网络设置');
+                }
+            } else {
+                networkTypeElement.textContent = '未知';
+            }
+
+            // 获取浏览器信息
+            browserVersionElement.textContent = getBrowserInfo();
+
+            // 获取设备和系统信息
+            const userAgent = navigator.userAgent;
+            let os = '未知';
+
+            if (userAgent.includes('Windows')) {
+                os = 'Windows';
+            } else if (userAgent.includes('Macintosh')) {
+                os = 'macOS';
+            } else if (userAgent.includes('Android')) {
+                os = 'Android ' + getVersion(userAgent, 'Android');
+            } else if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
+                os = 'iOS ' + getVersion(userAgent, 'OS');
+            }
+            systemVersionElement.textContent = os;
+
+            // 尝试检测设备品牌和型号
+            deviceBrandElement.textContent = '未知';
+            deviceModelElement.textContent = '未知';
+
+            if (userAgent.includes('iPhone')) {
+                deviceBrandElement.textContent = 'Apple';
+                deviceModelElement.textContent = 'iPhone';
+            } else if (userAgent.includes('iPad')) {
+                deviceBrandElement.textContent = 'Apple';
+                deviceModelElement.textContent = 'iPad';
+            } else if (userAgent.includes('Android')) {
+                const match = userAgent.match(/\((.*?)\)/);
+                if (match && match[1]) {
+                    deviceModelElement.textContent = match[1];
+                }
+            }
+        }
+
+        // 辅助函数：从UA中提取版本号
+        function getVersion(ua, name) {
+            const match = ua.match(new RegExp(name + ' (\\d+[\\.\\d+]*)'));
+            return match ? match[1] : '';
+        }
+
+        // 获取浏览器信息
+        function getBrowserInfo() {
+            const userAgent = navigator.userAgent;
+
+            if (userAgent.includes('Chrome')) {
+                return 'Chrome ' + getVersion(userAgent, 'Chrome');
+            } else if (userAgent.includes('Firefox')) {
+                return 'Firefox ' + getVersion(userAgent, 'Firefox');
+            } else if (userAgent.includes('Safari') && !userAgent.includes('Chrome')) {
+                return 'Safari ' + getVersion(userAgent, 'Version');
+            } else if (userAgent.includes('Edge')) {
+                return 'Edge ' + getVersion(userAgent, 'Edge');
+            } else if (userAgent.includes('MSIE') || userAgent.includes('Trident')) {
+                return 'Internet Explorer ' + getVersion(userAgent, 'MSIE') || '11';
+            }
+
+            return '未知浏览器';
+        }
+
+        // 速度转换
+        function speedConversion(speedKb) {
+            // 转换为MB/s
+            const speedMb = (speedKb / 1024).toFixed(2);
+            speedAsMbElement.textContent = speedMb;
+
+            // 确定宽带类型
+            let type = "0M宽带";
+            for (let i = 0; i < speedTypeList.length; i++) {
+                if (speedKb >= speedTypeList[i].min) {
+                    type = speedTypeList[i].name;
+                }
+            }
+
+            speedAsTypeElement.textContent = type;
+        }
+
+        // 显示提示 - 支持详细信息
+        function showToast(message, details = '') {
+            toastMessage.textContent = message;
+            toastDetails.textContent = details;
+            toast.classList.add('show');
+
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    });
+</script>
+</body>
+</html>

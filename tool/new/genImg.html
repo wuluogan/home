@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片模板编辑器</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        #preview-wrapper {
+            margin: 20px auto;
+            text-align: center;
+            overflow: auto;
+            background-color: #f8f9fa;
+        }
+        #preview-canvas {
+            display: block;
+            margin: 0 auto;
+            max-width: 100%;
+        }
+        
+        /* 全屏预览样式 */
+        #fullscreen-preview {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.9);
+            z-index: 9999;
+            text-align: center;
+        }
+        #fullscreen-canvas {
+            max-width: 90vw;
+            max-height: 90vh;
+            margin: 20px auto;
+        }
+        #close-fullscreen {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+            z-index: 10000;
+        }
+    </style>
+</head>
+<body>
+    <!-- 全屏预览容器 -->
+    <div id="fullscreen-preview">
+        <span id="close-fullscreen">&times;</span>
+        <canvas id="fullscreen-canvas"></canvas>
+    </div>
+
+    <div class="container mt-4">
+        <h1 class="text-center mb-4">图片模板编辑器</h1>
+        
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="card-title mb-0">模板设置</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label for="template-select" class="form-label">选择模板</label>
+                            <select class="form-select" id="template-select">
+                                <option value="">-- 请选择模板 --</option>
+                                <option value="wxfk">微信付款</option>
+                                <option value="invoice">发票</option>
+                            </select>
+                        </div>
+                        
+                        <div id="text-fields-container">
+                            <!-- 文本输入字段将在这里动态生成 -->
+                        </div>
+                        
+                        <div class="d-grid gap-2 mt-3">
+                            <button id="refresh-btn" class="btn btn-secondary">刷新预览</button>
+                            <button id="fullscreen-btn" class="btn btn-info">全屏预览</button>
+                            <button id="download-btn" class="btn btn-primary">下载图片</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header bg-secondary text-white">
+                        <h5 class="card-title mb-0">预览区域</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="preview-wrapper">
+                            <canvas id="preview-canvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 模板数据 - 移除固定宽高，改为由图片自身决定
+        const templates = {
+            wxfk: {
+                background: './wxfk.jpg',
+                texts: [
+                    { 
+                        name: '日期',
+                        content: 'HH:mm',
+                        fontFamily: '黑体', 
+                        fontSize: 46, 
+                        color: '#000000', 
+                        left: 64, 
+                        top: 55,
+                        align: 'left'
+                    },
+                    { 
+                        name: '付给',
+                        content: '便利店', 
+                        fontFamily: '黑体', 
+                        fontSize: 60, 
+                        color: '#000000', 
+                        left: 800, 
+                        top: 610,
+                        align: 'left' 
+                    },
+                    { 
+                        name: '金额',
+                        content: '-25.00', 
+                        fontFamily: '微软雅黑', 
+                        fontSize: 100, 
+                        color: '#000000', 
+                        bgColor: 'transparent', 
+                        left: 660, 
+                        top: 775, 
+                        align: 'center' 
+                    },
+                    { 
+                        name: '转账日期',
+                        content: 'YYYY年MM月DD日 HH:mm:ss', // 自动转为当前日期
+                        fontFamily: '宋体', 
+                        fontSize: 50, 
+                        color: '#000000', 
+                        bgColor: 'transparent', 
+                        left: 410, 
+                        top: 1550 
+                    }
+                ]
+            },
+            invoice: {
+                background: 'https://via.placeholder.com/800x600/FFFFFF/000000?text=发票',
+                texts: [
+                    { 
+                        name: '发票号码',
+                        content: '8', // 8位随机数
+                        fontFamily: 'Courier New', 
+                        fontSize: 18, 
+                        color: '#000000', 
+                        bgColor: 'transparent', 
+                        left: 650, 
+                        top: 50 
+                    },
+                    { 
+                        name: '开票日期',
+                        content: 'YYYY-MM-DD', // 自动转为当前日期
+                        fontFamily: '宋体', 
+                        fontSize: 16, 
+                        color: '#000000', 
+                        bgColor: 'transparent', 
+                        left: 650, 
+                        top: 80 
+                    }
+                ]
+            }
+        };
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const templateSelect = document.getElementById('template-select');
+            const textFieldsContainer = document.getElementById('text-fields-container');
+            const previewCanvas = document.getElementById('preview-canvas');
+            const fullscreenBtn = document.getElementById('fullscreen-btn');
+            const downloadBtn = document.getElementById('download-btn');
+            const refreshBtn = document.getElementById('refresh-btn');
+            const fullscreenCanvas = document.getElementById('fullscreen-canvas');
+            const fullscreenPreview = document.getElementById('fullscreen-preview');
+            const closeFullscreen = document.getElementById('close-fullscreen');
+            
+            let currentTemplate = null;
+            let backgroundImage = null;
+            let currentScale = 1;
+            // 存储原始图片尺寸
+            let originalImageWidth = 0;
+            let originalImageHeight = 0;
+            
+            // 选择模板
+            templateSelect.addEventListener('change', async function() {
+                const templateId = this.value;
+                if (!templateId) {
+                    currentTemplate = null;
+                    textFieldsContainer.innerHTML = '';
+                    previewCanvas.width = 0;
+                    previewCanvas.height = 0;
+                    return;
+                }
+                
+                currentTemplate = templates[templateId];
+                if (!currentTemplate) return;
+                
+                // 生成文本输入字段
+                generateTextFields(currentTemplate);
+                
+                // 加载背景图片
+                backgroundImage = await loadImage(currentTemplate.background);
+                // 记录原始图片尺寸
+                originalImageWidth = backgroundImage.naturalWidth;
+                originalImageHeight = backgroundImage.naturalHeight;
+                
+                // 初始化预览Canvas
+                initPreviewCanvas();
+                
+                // 渲染预览
+                renderPreview();
+            });
+            
+            // 加载图片
+            function loadImage(src) {
+                return new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.crossOrigin = 'Anonymous';
+                    img.onload = () => resolve(img);
+                    img.onerror = reject;
+                    img.src = src;
+                });
+            }
+            
+            // 初始化预览Canvas - 按图片原始比例设置
+            function initPreviewCanvas() {
+                if (!currentTemplate || !backgroundImage) return;
+                
+                // 计算适合显示的尺寸（保持原始比例）
+                const maxWidth = document.getElementById('preview-wrapper').clientWidth - 40;
+                // 计算图片宽高比
+                const imageRatio = originalImageWidth / originalImageHeight;
+                // 计算在最大宽度限制下的高度
+                const scaledHeight = maxWidth / imageRatio;
+                
+                // 确定缩放比例
+                currentScale = Math.min(maxWidth / originalImageWidth, 1);
+                
+                // 设置Canvas实际尺寸为原始图片尺寸（保证清晰度）
+                previewCanvas.width = originalImageWidth;
+                previewCanvas.height = originalImageHeight;
+                
+                // 显示时按缩放比例缩小，保持清晰
+                previewCanvas.style.width = `${maxWidth}px`;
+                previewCanvas.style.height = `${scaledHeight}px`;
+            }
+            
+            // 生成文本输入字段
+            function generateTextFields(template) {
+                textFieldsContainer.innerHTML = '';
+                
+                template.texts.forEach((text, index) => {
+                    const fieldGroup = document.createElement('div');
+                    fieldGroup.className = 'mb-3';
+                    
+                    const label = document.createElement('label');
+                    label.className = 'form-label';
+                    label.textContent = text.name || `文本 ${index + 1}`;
+                    
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.className = 'form-control';
+                    input.value = text.content;
+                    input.dataset.index = index;
+                    
+                    fieldGroup.appendChild(label);
+                    fieldGroup.appendChild(input);
+                    textFieldsContainer.appendChild(fieldGroup);
+                    
+                    input.addEventListener('input', function() {
+                        currentTemplate.texts[this.dataset.index].content = this.value;
+                        renderPreview();
+                    });
+                });
+            }
+            
+            // 格式化日期时间
+            function formatDateTime(format) {
+                const now = new Date();
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                const seconds = String(now.getSeconds()).padStart(2, '0');
+                
+                return format
+                    .replace('YYYY', year)
+                    .replace('MM', month)
+                    .replace('DD', day)
+                    .replace('HH', hours)
+                    .replace('mm', minutes)
+                    .replace('ss', seconds);
+            }
+            
+            // 获取处理后的文本值
+            function getProcessedTextValue(text) {
+                const content = text.content;
+                
+                if (content.includes('YYYY') || content.includes('MM') || content.includes('DD') || 
+                    content.includes('HH') || content.includes('mm') || content.includes('ss')) {
+                    return formatDateTime(content);
+                }
+                
+                return content;
+            }
+            
+            // 渲染预览 - 按原始比例绘制背景图
+            function renderPreview() {
+                if (!currentTemplate || !backgroundImage) return;
+                
+                const ctx = previewCanvas.getContext('2d');
+                
+                // 1. 清空Canvas
+                ctx.clearRect(0, 0, previewCanvas.width, previewCanvas.height);
+                
+                // 2. 按原始尺寸绘制背景图（不变形）
+                // 这里直接使用图片原始尺寸绘制，确保比例正确
+                ctx.drawImage(
+                    backgroundImage, 
+                    0, 0, 
+                    originalImageWidth, originalImageHeight,  // 图片原始尺寸
+                    0, 0, 
+                    previewCanvas.width, previewCanvas.height  // Canvas尺寸（与原始图片一致）
+                );
+                
+                // 3. 绘制文本
+                currentTemplate.texts.forEach(text => {
+                    const content = getProcessedTextValue(text);
+                    
+                    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+                    ctx.fillStyle = text.color;
+                    ctx.textBaseline = 'top';
+                    
+                    // 处理文本对齐
+                    if (text.align === 'center') {
+                        ctx.textAlign = 'center';
+                        ctx.fillText(content, text.left, text.top);
+                        ctx.textAlign = 'left'; // 重置
+                    } else {
+                        ctx.fillText(content, text.left, text.top);
+                    }
+                });
+            }
+            
+            // 刷新按钮
+            refreshBtn.addEventListener('click', function() {
+                renderPreview();
+            });
+            
+            // 全屏预览按钮 - 优化全屏显示比例
+            fullscreenBtn.addEventListener('click', function() {
+                if (!currentTemplate) {
+                    alert('请先选择模板');
+                    return;
+                }
+                
+                // 设置全屏Canvas尺寸为原始图片尺寸
+                fullscreenCanvas.width = originalImageWidth;
+                fullscreenCanvas.height = originalImageHeight;
+                
+                // 复制预览Canvas内容
+                const ctx = fullscreenCanvas.getContext('2d');
+                ctx.drawImage(previewCanvas, 0, 0);
+                
+                // 计算适合全屏的尺寸（保持比例）
+                const imageRatio = originalImageWidth / originalImageHeight;
+                const maxWidth = window.innerWidth * 0.9;
+                const maxHeight = window.innerHeight * 0.9;
+                
+                // 计算基于宽高比的最大显示尺寸
+                let displayWidth, displayHeight;
+                if (maxWidth / imageRatio <= maxHeight) {
+                    displayWidth = maxWidth;
+                    displayHeight = maxWidth / imageRatio;
+                } else {
+                    displayHeight = maxHeight;
+                    displayWidth = maxHeight * imageRatio;
+                }
+                
+                fullscreenCanvas.style.width = `${displayWidth}px`;
+                fullscreenCanvas.style.height = `${displayHeight}px`;
+                
+                // 显示全屏预览
+                fullscreenPreview.style.display = 'block';
+                document.body.style.overflow = 'hidden';
+            });
+            
+            // 关闭全屏预览
+            closeFullscreen.addEventListener('click', function() {
+                fullscreenPreview.style.display = 'none';
+                document.body.style.overflow = '';
+            });
+            
+            // ESC键关闭全屏预览
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape' && fullscreenPreview.style.display === 'block') {
+                    fullscreenPreview.style.display = 'none';
+                    document.body.style.overflow = '';
+                }
+            });
+            
+            // 下载按钮 - 保持原始比例下载
+            downloadBtn.addEventListener('click', function() {
+                if (!currentTemplate) {
+                    alert('请先选择模板');
+                    return;
+                }
+                
+                // 创建临时Canvas确保高质量导出（保持原始尺寸）
+                const tempCanvas = document.createElement('canvas');
+                tempCanvas.width = originalImageWidth;
+                tempCanvas.height = originalImageHeight;
+                
+                const ctx = tempCanvas.getContext('2d');
+                
+                // 1. 按原始比例绘制背景图
+                ctx.drawImage(backgroundImage, 0, 0, tempCanvas.width, tempCanvas.height);
+                
+                // 2. 绘制文本
+                currentTemplate.texts.forEach(text => {
+                    const content = getProcessedTextValue(text);
+                    
+                    ctx.font = `${text.fontSize}px ${text.fontFamily}`;
+                    ctx.fillStyle = text.color;
+                    ctx.textBaseline = 'top';
+                    
+                    if (text.align === 'center') {
+                        ctx.textAlign = 'center';
+                        ctx.fillText(content, text.left, text.top);
+                        ctx.textAlign = 'left';
+                    } else {
+                        ctx.fillText(content, text.left, text.top);
+                    }
+                });
+                
+                // 创建下载链接
+                const link = document.createElement('a');
+                link.download = `template_${new Date().getTime()}.png`;
+                link.href = tempCanvas.toDataURL('image/png');
+                link.click();
+            });
+            
+            // 窗口大小变化时调整预览（保持比例）
+            window.addEventListener('resize', function() {
+                if (currentTemplate && backgroundImage) {
+                    initPreviewCanvas();
+                    renderPreview();
+                }
+            });
+        });
+    </script>
+</body>
+</html>
