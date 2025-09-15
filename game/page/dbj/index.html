@@ -5,9 +5,6 @@
     <title>旋转吧大宝剑</title>
     <meta name="viewport" content="width=device-width,user-scalable=no"/>
     <meta charset="utf-8"/>
-    <meta name="author" content="tg"/>
-    <script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
-        <script src="http://res.wx.qq.com/open/js/jweixin-1.0.0.js"></script>
 </head>
 <style>
 
@@ -72,80 +69,10 @@ function complete(){
  document.getElementById("loadicon").style.display="none";
  cc.game.run();
 }
- // function onBridgeReady() {
- //     //转发朋友圈
- //     WeixinJSBridge.on("menu:share:timeline", function(e) {
- //         var url = 'http://tgideas.qq.com/flash/h5/lol/dbj/index.html';
- //         var data = {
- //             img_url: "http://tgideas.qq.com/flash/h5/lol/dbj/res/logo.jpg",
- //             img_width: "120",
- //             img_height: "120",
- //             link: url,
- //             //desc这个属性要加上，虽然不会显示，但是不加暂时会导致无法转发至朋友圈，
- //             title:GD.SHARE,
- //             desc: " "
- //         };
- //         WeixinJSBridge.invoke("shareTimeline", data, function(res) {
- //             if(pgvSendClick&&typeof(pgvSendClick) == 'function') pgvSendClick({hottag:'h5game.zgl.shareTimeline'});
- //            // pgvSendClick({hottag:'act.a20140721hds.shareTimeline'});
- //             WeixinJSBridge.log(res.err_msg);
-
- //         });
- //     });
- //     //同步到微博
- //     WeixinJSBridge.on("menu:share:weibo", function() {
- //         var url = 'http://tgideas.qq.com/flash/h5/lol/dbj/index.html';
- //         WeixinJSBridge.invoke("shareWeibo", {
- //             "content": GD.SHARE,
- //             "url": url
- //         }, function(res) {
- //             if(pgvSendClick&&typeof(pgvSendClick) == 'function') pgvSendClick({hottag:'h5game.zgl.shareweibo'});
- //             WeixinJSBridge.log(res.err_msg);
- //         });
- //     });
- //     //分享给朋友
- //     WeixinJSBridge.on('menu:share:appmessage', function(argv) {
- //         var url = 'http://tgideas.qq.com/flash/h5/lol/dbj/index.html';
- //         WeixinJSBridge.invoke("sendAppMessage", {
- //             img_url: "http://tgideas.qq.com/flash/h5/lol/dbj/res/logo.jpg",
- //             img_width: "120",
- //             img_height: "120",
- //             link: url,
- //             title:"旋转吧大宝剑",
- //             desc: GD.SHARE
- //         }, function(res) {
- //             if(pgvSendClick&&typeof(pgvSendClick) == 'function') pgvSendClick({hottag:'h5game.zgl.sharemessage'});
- //           //  pgvSendClick({hottag:'act.a20140721hds.sharemessage'});
- //             WeixinJSBridge.log(res.err_msg)
- //         });
- //     });
- // };
- // try{
- //     document.addEventListener('WeixinJSBridgeReady', function() {
- //         onBridgeReady();
- //     });
- // }catch(e){}
 </script>
-<!--<script src="http://tgideas.qq.com/flash/h5/fight/co/lib/cocos2dtgme.js"></script>-->
 
 <script src="js/cocos2dtgme.js"></script>
 <script src="js/app.js"></script>
 
-
-<script  type="text/JavaScript">
-window.shareData={
-  'title':'旋转吧大宝剑',
-  'link':'http://www.dkewl.com/games/dbj/',
-  'imgurl':'http://www.dkewl.com/games/dbj/icon.png'
-}
-window.shareFriendData={
-  'title':'旋转吧大宝剑',
-  'content':'关注刀客源码,更多好玩的游戏等着你。',
-  'link':'http://www.dkewl.com/games/dbj/',
-  'imgurl':'http://www.dkewl.com/games/dbj/icon.png'
-}
-
-</script>
-<script type="text/JavaScript" src="http://gc.veiying.cn/code"></script>
 </body>
-</html><!--[if !IE]>|xGv00|559093bacc5faaac5666858c7aaed8d7<![endif]-->
+</html>
