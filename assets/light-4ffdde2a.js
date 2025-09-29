@@ -1,1 +1,0 @@
-import{ad as o}from"./index-ec62472c.js";function r(){return{dotSize:"8px",dotColor:"rgba(255, 255, 255, .3)",dotColorActive:"rgba(255, 255, 255, 1)",dotColorFocus:"rgba(255, 255, 255, .5)",dotLineWidth:"16px",dotLineWidthActive:"24px",arrowColor:"#eee"}}const t={name:"Carousel",common:o,self:r};export{t as c,r as s};
