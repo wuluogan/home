@@ -1,0 +1,44 @@
+<!DOCTYPE html> 
+<html lang="en"> 
+<head> 
+  <meta charset="UTF-8"> 
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> 
+  <title>生成新头像</title> 
+</head> 
+<body> 
+  <button id="generateAvatarBtn" style="margin: 20px; padding: 10px 20px; font-size: 16px;">生成新头像</button> 
+   
+  <!-- 用于显示新生成头像的容器 --> 
+  <div id="avatarsContainer" style="display: flex; flex-wrap: wrap; gap: 10px;"> 
+    <h3>生成的头像:</h3> 
+  </div> 
+</body> 
+<script src="https://cdn.jsdelivr.net/npm/@multiavatar/multiavatar/multiavatar.min.js"></script> 
+<script> 
+     // 等待DOM加载完成 
+     document.addEventListener('DOMContentLoaded', function() { 
+      // 获取按钮和容器元素 
+      const generateBtn = document.getElementById('generateAvatarBtn'); 
+      const avatarsContainer = document.getElementById('avatarsContainer'); 
+       
+      // 点击按钮生成新头像 
+      generateBtn.addEventListener('click', function() { 
+        // 生成随机ID作为头像标识 
+        const randomId = 'avatar_' + Math.random().toString(36).substr(2, 9); 
+         
+        // 使用multiavatar生成头像SVG代码 
+        const svgCode = multiavatar(randomId); 
+         
+        // 创建新的div容器来放置头像 
+        const avatarDiv = document.createElement('div'); 
+        avatarDiv.style.width = '120px'; 
+        avatarDiv.style.height = '120px'; 
+        avatarDiv.innerHTML = svgCode; 
+         
+        // 将新头像添加到容器中 
+        avatarsContainer.appendChild(avatarDiv); 
+      }); 
+    }); 
+    // https://blog.csdn.net/gitblog_00320/article/details/142802520 
+</script> 
+</html> 
